@@ -1,12 +1,11 @@
 [package]
-name = "sysdrain"
+name = "rsyslog"
 version = "0.1.0"
 authors = ["Filippos Vasilakis <vasilakisfil@gmail.com>"]
 edition = "2018"
 
-[dependencies]
-rsyslog = { path = "rsyslog" }
-nom = { version = "6.1.2", features = ["alloc", "regexp"] }
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
-[workspace]
-members =  ["rsyslog"]
+[dependencies]
+nom = { version = "6.1.2", features = ["alloc", "regexp"] }
+chrono = { version = "0.4.19"}
