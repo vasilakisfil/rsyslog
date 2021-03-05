@@ -2,10 +2,11 @@ use crate::Error;
 use chrono::{DateTime, FixedOffset};
 use nom::{
     branch::alt,
-    bytes::complete::{tag, take_until, take_while},
-    character::complete::{anychar, digit1, space1},
+    bytes::complete::{tag, take_until},
+    character::complete::{digit1, space1},
     combinator::rest,
     error::VerboseError,
+    multi::many1,
     sequence::{delimited, pair, tuple},
     IResult,
 };
@@ -19,7 +20,7 @@ pub fn parse(msg: &'static str) -> Result<crate::Message, Error> {
     let (rem, hostname) = parse_word(rem)?;
     let (rem, app_name) = parse_word(rem)?;
     let (rem, proc_id) = parse_word(rem)?;
-    let (rem, structured_data) = retuple(pair(space1, parse_structured_data)(rem))?;
+    let (rem, structured_data) = retuple(pair(space1, parse_optional_structured_data)(rem))?;
 
     let (_, router) = parse_msg(rem)?;
 
@@ -48,18 +49,25 @@ fn retuple(
     tuple.map(|tuple| (tuple.0, (tuple.1).1))
 }
 
-fn parse_structured_data(part: &'static str) -> Res<&'static str, Option<&'static str>> {
-    //let (rem, _) = space1::<_, VerboseError<&'static str>>(part)?;
-    let (rem, data) = alt((tag("-"), parse_structured_data_real))(part)?;
-    let data = match data {
-        "-" => None,
-        _ => Some(data),
-    };
+fn parse_optional_structured_data(part: &'static str) -> Res<&'static str, Option<&'static str>> {
+    use nom::combinator::map;
+
+    let (rem, data) = alt((
+        map(tag("-"), |_| None),
+        map(parse_seq_structured_data, |s: Vec<&'static str>| Some(s)),
+    ))(part)?;
+    let data = data.map(|d| *d.first().unwrap());
 
     Ok((rem, data))
 }
 
-fn parse_structured_data_real(part: &'static str) -> Res<&'static str, &'static str> {
+fn parse_seq_structured_data(part: &'static str) -> Res<&'static str, Vec<&'static str>> {
+    let (rem, data) = many1(parse_structured_data)(part)?;
+
+    Ok((rem, data))
+}
+
+fn parse_structured_data(part: &'static str) -> Res<&'static str, &'static str> {
     delimited::<_, _, _, _, VerboseError<&'static str>, _, _, _>(
         tag("["),
         take_until("]"),
@@ -164,10 +172,15 @@ mod tests {
     #[test]
     fn simple_structured_data_inner() {
         //parse_structured_data("[exampleSDID@32473 iut=\"3\" eventSource=\"Application\" eventID=\"1011\"]");
-        assert_eq!(None, parse_structured_data("-").expect("parsing data").1);
+        assert_eq!(
+            None,
+            parse_optional_structured_data("-").expect("parsing data").1
+        );
         assert_eq!(
             Some("a"),
-            parse_structured_data("[a]").expect("parsing data").1
+            parse_optional_structured_data("[a]")
+                .expect("parsing data")
+                .1
         );
     }
 }

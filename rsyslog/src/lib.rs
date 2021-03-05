@@ -20,11 +20,13 @@ pub struct Message {
     pub msg: Option<Router>,
 }
 
+#[allow(dead_code)]
 pub struct StructuredData {
     id: String,
     params: Vec<SdParam>
 }
 
+#[allow(dead_code)]
 pub struct SdParam {
     name: String,
     value: String
