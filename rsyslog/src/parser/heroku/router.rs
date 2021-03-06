@@ -1,3 +1,4 @@
+use crate::parser::helpers;
 use nom::{
     branch::alt,
     bytes::complete::{tag, take_until},
@@ -33,8 +34,8 @@ pub fn parse_router_msg<'a>(msg: &'a str) -> Res<&'a str, crate::Router> {
         dyno: dyno.into(),
         connect: connect.into(),
         service: service.into(),
-        status: crate::helpers::parse_u8(status)?,
-        bytes: crate::helpers::parse_u32(bytes)?,
+        status: helpers::parse_u8(status)?,
+        bytes: helpers::parse_u32(bytes)?,
         protocol: protocol.into(),
     };
 

@@ -1,4 +1,12 @@
-use nom::{error::VerboseError, number::complete as number};
+use nom::{error::VerboseError, number::complete as number, IResult};
+
+type Res<T, U> = IResult<T, U, VerboseError<T>>;
+
+pub fn retuple<'a>(
+    tuple: Res<&'a str, (&'a str, Option<&'a str>)>,
+) -> Res<&'a str, Option<&'a str>> {
+    tuple.map(|tuple| (tuple.0, (tuple.1).1))
+}
 
 pub fn parse_u8<'a>(part: &'a str) -> Result<u8, nom::Err<VerboseError<&'a str>>> {
     let (_, part) = number::double(part)?;

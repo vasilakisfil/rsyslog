@@ -1,6 +1,9 @@
 pub mod structured_data;
 
-use crate::parser::{common::retuple, heroku::router::parse_router_msg};
+use crate::parser::{
+    helpers::{parse_u8, retuple},
+    heroku::router::parse_router_msg,
+};
 use crate::Error;
 use chrono::{DateTime, FixedOffset};
 use nom::{
@@ -45,7 +48,7 @@ fn parse_pri<'a>(part: &'a str) -> Res<&'a str, u8> {
     let (rem, _) = tag("<")(rem)?;
 
     let (rem, pri) = take_until(">")(rem)?;
-    let pri = crate::helpers::parse_u8(pri)?;
+    let pri = parse_u8(pri)?;
 
     let (rem, _) = tag(">")(rem)?;
 
@@ -55,7 +58,7 @@ fn parse_pri<'a>(part: &'a str) -> Res<&'a str, u8> {
 fn parse_version<'a>(part: &'a str) -> Res<&'a str, u8> {
     let (rem, version) = digit1(part)?;
 
-    Ok((rem, crate::helpers::parse_u8(version)?))
+    Ok((rem, parse_u8(version)?))
 }
 
 fn parse_timestamp<'a>(timestamp: &str) -> Result<DateTime<FixedOffset>, Error> {
