@@ -25,18 +25,18 @@ pub fn parse_router_msg<'a>(msg: &'a str) -> Res<&'a str, crate::Router> {
     let (_, protocol) = parse_router_end_word(rem, "protocol=")?;
 
     let router = crate::Router {
-        at: at.into(),
-        method: method.into(),
-        path: path.into(),
-        host: host.into(),
-        request_id: request_id.into(),
-        fwd: fwd.into(),
-        dyno: dyno.into(),
-        connect: connect.into(),
-        service: service.into(),
+        at: at,
+        method: method,
+        path: path,
+        host: host,
+        request_id: request_id,
+        fwd: fwd,
+        dyno: dyno,
+        connect: connect,
+        service: service,
         status: helpers::parse_u8(status)?,
         bytes: helpers::parse_u32(bytes)?,
-        protocol: protocol.into(),
+        protocol: protocol,
     };
 
     Ok((msg, router))

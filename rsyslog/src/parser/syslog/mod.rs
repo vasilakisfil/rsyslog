@@ -33,10 +33,10 @@ pub fn parse<'a>(msg: &'a str) -> Result<crate::Message, Error> {
         severity: pri & 7,
         version,
         timestamp: timestamp.map(parse_timestamp).transpose()?,
-        hostname: hostname.map(Into::into),
-        app_name: app_name.map(Into::into),
-        proc_id: proc_id.map(Into::into),
-        structured_data: structured_data.map(Into::into),
+        hostname: hostname,
+        app_name: app_name,
+        proc_id: proc_id,
+        structured_data: structured_data,
         msg: router,
     };
 
