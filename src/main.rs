@@ -3,7 +3,9 @@ fn main() {
     match rsyslog::parse(msg) {
         Ok(msg) => println!("{:?}", msg),
         Err(err) => match err {
-            rsyslog::Error::Nom(nom::Err::Error(e)) => println!("{}", nom::error::convert_error(msg, e)),
+            rsyslog::Error::Nom(nom::Err::Error(e)) => {
+                println!("{}", nom::error::convert_error(msg, e))
+            }
             _ => println!("{:?}", err),
         },
     }

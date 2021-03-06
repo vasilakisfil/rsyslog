@@ -93,7 +93,9 @@ fn test_simple() {
         })
     );
 
-    let msg = rsyslog::parse("<1>1 2021-03-01T19:04:19.887695+00:00 host app_name proc_id [structured_data] -");
+    let msg = rsyslog::parse(
+        "<1>1 2021-03-01T19:04:19.887695+00:00 host app_name proc_id [structured_data] -",
+    );
 
     assert_eq!(
         msg,
@@ -129,7 +131,9 @@ fn complex_structured_data() {
             hostname: Some("host".into()),
             app_name: Some("app_name".into()),
             proc_id: Some("proc_id".into()),
-            structured_data: Some("exampleSDID@32473 iut=\"3\" eventSource=\"Application\" eventID=\"1011\"".into()),
+            structured_data: Some(
+                "exampleSDID@32473 iut=\"3\" eventSource=\"Application\" eventID=\"1011\"".into()
+            ),
             msg: None
         })
     );

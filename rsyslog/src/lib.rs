@@ -4,8 +4,8 @@ mod error;
 mod helpers;
 mod parser;
 
-pub use parser::parse;
 pub use error::Error;
+pub use parser::syslog::parse;
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct Message {
@@ -23,13 +23,13 @@ pub struct Message {
 #[allow(dead_code)]
 pub struct StructuredData {
     id: String,
-    params: Vec<SdParam>
+    params: Vec<SdParam>,
 }
 
 #[allow(dead_code)]
 pub struct SdParam {
     name: String,
-    value: String
+    value: String,
 }
 
 #[derive(Debug, Eq, PartialEq)]
@@ -47,4 +47,3 @@ pub struct Router {
     pub bytes: u32,
     pub protocol: String,
 }
-
