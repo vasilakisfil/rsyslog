@@ -13,7 +13,7 @@ use nom::{
 
 type Res<T, U> = IResult<T, U, VerboseError<T>>;
 
-pub fn parse(msg: &'static str) -> Result<crate::Message, Error> {
+pub fn parse<'a>(msg: &'a str) -> Result<crate::Message, Error> {
     let (rem, pri) = parse_pri(msg)?;
     let (rem, version) = parse_version(rem)?;
     let (rem, timestamp) = parse_word(rem)?;
@@ -39,52 +39,54 @@ pub fn parse(msg: &'static str) -> Result<crate::Message, Error> {
     Ok(message)
 }
 
-fn parse_timestamp(timestamp: &str) -> Result<DateTime<FixedOffset>, Error> {
+fn parse_timestamp<'a>(timestamp: &str) -> Result<DateTime<FixedOffset>, Error> {
     Ok(chrono::DateTime::parse_from_rfc3339(timestamp)?)
 }
 
-fn retuple(
-    tuple: Res<&'static str, (&'static str, Option<&'static str>)>,
-) -> Res<&'static str, Option<&'static str>> {
+fn retuple<'a>(tuple: Res<&'a str, (&'a str, Option<&'a str>)>) -> Res<&'a str, Option<&'a str>> {
     tuple.map(|tuple| (tuple.0, (tuple.1).1))
 }
 
-fn parse_optional_structured_data(part: &'static str) -> Res<&'static str, Option<&'static str>> {
+fn parse_optional_structured_data<'a>(part: &'a str) -> Res<&'a str, Option<&'a str>> {
     use nom::combinator::map;
 
     let (rem, data) = alt((
         map(tag("-"), |_| None),
-        map(parse_seq_structured_data, |s: Vec<&'static str>| Some(s)),
+        map(parse_seq_structured_data, |s: Vec<&'a str>| Some(s)),
     ))(part)?;
     let data = data.map(|d| *d.first().unwrap());
 
     Ok((rem, data))
 }
 
-fn parse_seq_structured_data(part: &'static str) -> Res<&'static str, Vec<&'static str>> {
+fn parse_seq_structured_data<'a>(part: &'a str) -> Res<&'a str, Vec<&'a str>> {
     let (rem, data) = many1(parse_structured_data)(part)?;
 
     Ok((rem, data))
 }
 
-fn parse_structured_data(part: &'static str) -> Res<&'static str, &'static str> {
-    delimited::<_, _, _, _, VerboseError<&'static str>, _, _, _>(
-        tag("["),
-        take_until("]"),
-        tag("]"),
-    )(part)
+fn parse_structured_data<'a>(part: &'a str) -> Res<&'a str, &'a str> {
+    delimited::<_, _, _, _, VerboseError<&'a str>, _, _, _>(tag("["), take_until("]"), tag("]"))(
+        part,
+    )
 }
 
-fn parse_msg(msg: &'static str) -> Res<&'static str, Option<crate::Router>> {
+/*
+fn parse_structured_data_inner(part: &'a str) -> Result<&'a str, Error> {
+    Ok(part)
+}
+*/
+
+fn parse_msg<'a>(msg: &'a str) -> Res<&'a str, Option<crate::Router>> {
     let (rem, _) = space1(msg)?;
-    if tag::<_, _, VerboseError<&'static str>>("-")(rem).is_ok() {
+    if tag::<_, _, VerboseError<&'a str>>("-")(rem).is_ok() {
         return Ok((msg, None));
     } else {
         parse_router_msg(msg).map(|(rem, router)| (rem, Some(router)))
     }
 }
 
-fn parse_router_msg(msg: &'static str) -> Res<&'static str, crate::Router> {
+fn parse_router_msg<'a>(msg: &'a str) -> Res<&'a str, crate::Router> {
     let (rem, at) = parse_router_word(msg, "at=")?;
     let (rem, method) = parse_router_word(rem, "method=")?;
     let (rem, path) = parse_router_word(rem, "path=")?;
@@ -116,7 +118,7 @@ fn parse_router_msg(msg: &'static str) -> Res<&'static str, crate::Router> {
     Ok((msg, router))
 }
 
-fn parse_pri(part: &'static str) -> Res<&'static str, u8> {
+fn parse_pri<'a>(part: &'a str) -> Res<&'a str, u8> {
     let (rem, _) = take_until("<")(part)?;
     let (rem, _) = tag("<")(rem)?;
 
@@ -128,13 +130,13 @@ fn parse_pri(part: &'static str) -> Res<&'static str, u8> {
     Ok((rem, pri))
 }
 
-fn parse_version(part: &'static str) -> Res<&'static str, u8> {
+fn parse_version<'a>(part: &'a str) -> Res<&'a str, u8> {
     let (rem, version) = digit1(part)?;
 
     Ok((rem, crate::helpers::parse_u8(version)?))
 }
 
-fn parse_word(part: &'static str) -> Res<&'static str, Option<&str>> {
+fn parse_word<'a>(part: &'a str) -> Res<&'a str, Option<&str>> {
     let (rem, _) = space1(part)?;
 
     let (rem, word) = take_until(" ")(rem)?;
@@ -146,16 +148,13 @@ fn parse_word(part: &'static str) -> Res<&'static str, Option<&str>> {
     }
 }
 
-fn parse_router_word(part: &'static str, element: &'static str) -> Res<&'static str, &'static str> {
+fn parse_router_word<'a>(part: &'a str, element: &'a str) -> Res<&'a str, &'a str> {
     let (rem, (_, _, el)) = tuple((take_until(element), tag(element), take_until(" ")))(part)?;
 
     Ok((rem, el))
 }
 
-fn parse_router_end_word(
-    part: &'static str,
-    element: &'static str,
-) -> Res<&'static str, &'static str> {
+fn parse_router_end_word<'a>(part: &'a str, element: &'a str) -> Res<&'a str, &'a str> {
     let (rem, (_, _, el)) = tuple((
         take_until(element),
         tag(element),
