@@ -1,9 +1,6 @@
 pub mod structured_data;
 
-use crate::parser::{
-    common::{parse_word, retuple},
-    heroku::router::parse_msg,
-};
+use crate::parser::{common::retuple, heroku::router::parse_router_msg};
 use crate::Error;
 use chrono::{DateTime, FixedOffset};
 use nom::{
@@ -20,10 +17,10 @@ type Res<T, U> = IResult<T, U, VerboseError<T>>;
 pub fn parse<'a>(msg: &'a str) -> Result<crate::Message, Error> {
     let (rem, pri) = parse_pri(msg)?;
     let (rem, version) = parse_version(rem)?;
-    let (rem, timestamp) = parse_word(rem)?;
-    let (rem, hostname) = parse_word(rem)?;
-    let (rem, app_name) = parse_word(rem)?;
-    let (rem, proc_id) = parse_word(rem)?;
+    let (rem, timestamp) = parse_part(rem)?;
+    let (rem, hostname) = parse_part(rem)?;
+    let (rem, app_name) = parse_part(rem)?;
+    let (rem, proc_id) = parse_part(rem)?;
     let (rem, structured_data) = retuple(pair(space1, parse_optional_structured_data)(rem))?;
 
     let (_, router) = parse_msg(rem)?;
@@ -63,4 +60,25 @@ fn parse_version<'a>(part: &'a str) -> Res<&'a str, u8> {
 
 fn parse_timestamp<'a>(timestamp: &str) -> Result<DateTime<FixedOffset>, Error> {
     Ok(chrono::DateTime::parse_from_rfc3339(timestamp)?)
+}
+
+fn parse_msg<'a>(msg: &'a str) -> Res<&'a str, Option<crate::Router>> {
+    let (rem, _) = space1(msg)?;
+    if tag::<_, _, VerboseError<&'a str>>("-")(rem).is_ok() {
+        return Ok((msg, None));
+    } else {
+        parse_router_msg(msg).map(|(rem, router)| (rem, Some(router)))
+    }
+}
+
+pub fn parse_part<'a>(part: &'a str) -> Res<&'a str, Option<&str>> {
+    let (rem, _) = space1(part)?;
+
+    let (rem, word) = take_until(" ")(rem)?;
+
+    if word == "-" {
+        Ok((rem, None))
+    } else {
+        Ok((rem, Some(word)))
+    }
 }

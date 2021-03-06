@@ -1,7 +1,6 @@
 use nom::{
     branch::alt,
     bytes::complete::{tag, take_until},
-    character::complete::space1,
     combinator::rest,
     error::VerboseError,
     sequence::tuple,
@@ -9,15 +8,6 @@ use nom::{
 };
 
 type Res<T, U> = IResult<T, U, VerboseError<T>>;
-
-pub fn parse_msg<'a>(msg: &'a str) -> Res<&'a str, Option<crate::Router>> {
-    let (rem, _) = space1(msg)?;
-    if tag::<_, _, VerboseError<&'a str>>("-")(rem).is_ok() {
-        return Ok((msg, None));
-    } else {
-        parse_router_msg(msg).map(|(rem, router)| (rem, Some(router)))
-    }
-}
 
 pub fn parse_router_msg<'a>(msg: &'a str) -> Res<&'a str, crate::Router> {
     let (rem, at) = parse_router_word(msg, "at=")?;

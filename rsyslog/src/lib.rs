@@ -21,15 +21,17 @@ pub struct Message {
 }
 
 #[allow(dead_code)]
-pub struct StructuredData {
-    id: String,
-    params: Vec<SdParam>,
+#[derive(Debug, Eq, PartialEq)]
+pub struct StructuredData<'a> {
+    id: &'a str,
+    params: Vec<SdParam<'a>>,
 }
 
 #[allow(dead_code)]
-pub struct SdParam {
-    name: String,
-    value: String,
+#[derive(Debug, Eq, PartialEq)]
+pub struct SdParam<'a> {
+    name: &'a str,
+    value: &'a str,
 }
 
 #[derive(Debug, Eq, PartialEq)]
@@ -46,4 +48,22 @@ pub struct Router {
     pub status: u8,
     pub bytes: u32,
     pub protocol: String,
+}
+
+impl<'a> From<(&'a str, Vec<SdParam<'a>>)> for StructuredData<'a> {
+    fn from(tuple: (&'a str, Vec<SdParam<'a>>)) -> Self {
+        Self {
+            id: tuple.0,
+            params: tuple.1,
+        }
+    }
+}
+
+impl<'a> From<(&'a str, &'a str)> for SdParam<'a> {
+    fn from(tuple: (&'a str, &'a str)) -> Self {
+        Self {
+            name: tuple.0,
+            value: tuple.1,
+        }
+    }
 }
