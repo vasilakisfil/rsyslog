@@ -7,7 +7,7 @@ pub use error::Error;
 pub use parser::syslog::parse;
 
 #[derive(Debug, Eq, PartialEq)]
-pub struct Message<'a> {
+pub struct Message<'a, T> {
     pub facility: u8,
     pub severity: u8,
     pub version: u8,
@@ -16,7 +16,7 @@ pub struct Message<'a> {
     pub app_name: Option<&'a str>,
     pub proc_id: Option<&'a str>,
     pub structured_data: Option<&'a str>,
-    pub msg: Option<Router<'a>>,
+    pub msg: T,
 }
 
 #[allow(dead_code)]

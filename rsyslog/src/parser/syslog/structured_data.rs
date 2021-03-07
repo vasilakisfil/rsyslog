@@ -39,7 +39,7 @@ fn parse_structured_data_inner<'a>(part: &'a str) -> Res<&'a str, StructuredData
     use nom::character::complete::space0;
 
     let (rem, _) = space0(part)?;
-    let (rem, id) = take_until(" ")(part)?;
+    let (rem, id) = take_until(" ")(rem)?;
 
     let (rem, sd_params) = many0(parse_structured_elements)(rem)?;
 

@@ -1,10 +1,12 @@
 pub mod structured_data;
 
-use crate::parser::{
-    helpers::{parse_u8, retuple},
-    heroku::router::parse_router_msg,
+use crate::{
+    parser::{
+        helpers::{parse_u8, retuple},
+        heroku::router::parse_router_msg,
+    },
+    Error, Message, Router,
 };
-use crate::Error;
 use chrono::{DateTime, FixedOffset};
 use nom::{
     bytes::complete::{tag, take_until},
@@ -17,16 +19,16 @@ use structured_data::parse_optional_structured_data;
 
 type Res<T, U> = IResult<T, U, VerboseError<T>>;
 
-pub fn parse<'a>(msg: &'a str) -> Result<crate::Message, Error> {
+pub fn parse<'a>(msg: &'a str) -> Result<Message<Router>, Error> {
     let (rem, pri) = parse_pri(msg)?;
     let (rem, version) = parse_version(rem)?;
     let (rem, timestamp) = parse_part(rem)?;
     let (rem, hostname) = parse_part(rem)?;
     let (rem, app_name) = parse_part(rem)?;
     let (rem, proc_id) = parse_part(rem)?;
-    let (rem, structured_data) = retuple(pair(space1, parse_optional_structured_data)(rem))?;
+    let (_, structured_data) = retuple(pair(space1, parse_optional_structured_data)(rem))?;
 
-    let (_, router) = parse_msg(rem)?;
+    let (_, router) = parse_typed_msg(rem)?;
 
     let message = crate::Message {
         facility: pri >> 3,
@@ -42,6 +44,15 @@ pub fn parse<'a>(msg: &'a str) -> Result<crate::Message, Error> {
 
     Ok(message)
 }
+
+fn parse_typed_msg<'a>(part: &'a str) -> Res<&'a str, Router> {
+    parse_router_msg(part).map(|(rem, router)| (rem, router))
+}
+
+/*
+fn parse_remaining<'a>(part: &'a str) -> Res<&'a str, Msg<Router>> {
+    rest(part).map(|(rem, remaining)| (rem, Msg::Raw(remaining)))
+}*/
 
 fn parse_pri<'a>(part: &'a str) -> Res<&'a str, u8> {
     let (rem, _) = take_until("<")(part)?;
@@ -63,15 +74,6 @@ fn parse_version<'a>(part: &'a str) -> Res<&'a str, u8> {
 
 fn parse_timestamp<'a>(timestamp: &str) -> Result<DateTime<FixedOffset>, Error> {
     Ok(chrono::DateTime::parse_from_rfc3339(timestamp)?)
-}
-
-fn parse_msg<'a>(msg: &'a str) -> Res<&'a str, Option<crate::Router>> {
-    let (rem, _) = space1(msg)?;
-    if tag::<_, _, VerboseError<&'a str>>("-")(rem).is_ok() {
-        return Ok((msg, None));
-    } else {
-        parse_router_msg(msg).map(|(rem, router)| (rem, Some(router)))
-    }
 }
 
 pub fn parse_part<'a>(part: &'a str) -> Res<&'a str, Option<&str>> {
