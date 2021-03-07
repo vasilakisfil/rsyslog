@@ -1,7 +1,7 @@
 use chrono::{DateTime, FixedOffset};
 
 mod error;
-mod parser;
+pub mod parser;
 
 pub use error::Error;
 pub use parser::syslog::parse;
@@ -9,7 +9,7 @@ pub use parser::syslog::parse;
 type Res<T, U> = nom::IResult<T, U, nom::error::VerboseError<T>>;
 
 pub trait ParseMsg<'a> {
-    fn parse_router_msg(msg: &'a str) -> Res<&'a str, Self> where Self: Sized;
+    fn parse(msg: &'a str) -> Res<&'a str, Self> where Self: Sized;
 }
 
 #[derive(Debug, Eq, PartialEq)]

@@ -27,7 +27,7 @@ pub struct HerokuRouter<'a> {
 }
 
 impl<'a> ParseMsg<'a> for HerokuRouter<'a> {
-    fn parse_router_msg(msg: &'a str) -> Res<&'a str, Self> {
+    fn parse(msg: &'a str) -> Res<&'a str, Self> {
         let (rem, at) = parse_router_word(msg, "at=")?;
         let (rem, method) = parse_router_word(rem, "method=")?;
         let (rem, path) = parse_router_word(rem, "path=")?;
@@ -39,7 +39,7 @@ impl<'a> ParseMsg<'a> for HerokuRouter<'a> {
         let (rem, service) = parse_router_word(rem, "service=")?;
         let (rem, status) = parse_router_word(rem, "status=")?;
         let (rem, bytes) = parse_router_word(rem, "bytes=")?;
-        let (_, protocol) = parse_router_end_word(rem, "protocol=")?;
+        let (rem, protocol) = parse_router_end_word(rem, "protocol=")?;
 
         let router = Self {
             at: at,
@@ -56,7 +56,7 @@ impl<'a> ParseMsg<'a> for HerokuRouter<'a> {
             protocol: protocol,
         };
 
-        Ok((msg, router))
+        Ok((rem, router))
     }
 }
 

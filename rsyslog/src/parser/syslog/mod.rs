@@ -20,7 +20,7 @@ use structured_data::parse_optional_structured_data;
 
 type Res<T, U> = IResult<T, U, VerboseError<T>>;
 
-pub fn parse<'a>(msg: &'a str) -> Result<Message<HerokuRouter>, Error> {
+pub fn parse<'a, T: ParseMsg<'a>>(msg: &'a str) -> Result<Message<T>, Error> {
     let (rem, pri) = parse_pri(msg)?;
     let (rem, version) = parse_version(rem)?;
     let (rem, timestamp) = parse_part(rem)?;
@@ -29,7 +29,7 @@ pub fn parse<'a>(msg: &'a str) -> Result<Message<HerokuRouter>, Error> {
     let (rem, proc_id) = parse_part(rem)?;
     let (_, structured_data) = retuple(pair(space1, parse_optional_structured_data)(rem))?;
 
-    let (_, router) = HerokuRouter::parse_router_msg(rem)?;
+    let (_, router) = T::parse(rem)?;
 
     let message = crate::Message {
         facility: pri >> 3,
