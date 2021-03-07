@@ -1,30 +1,31 @@
 pub mod structured_data;
 
-use crate::{
-    parser::helpers::{parse_u8, retuple},
-    Error, Message, ParseMsg, StructuredData,
-};
+use crate::{parser::helpers::parse_u8, Error, Message, ParseMsg};
 use chrono::{DateTime, FixedOffset};
 use nom::{
+    branch::alt,
     bytes::complete::{tag, take_until},
     character::complete::{digit1, space0, space1},
+    combinator::map,
     error::VerboseError,
-    sequence::pair,
     IResult,
 };
-use structured_data::parse_optional_structured_data;
 
 type Res<T, U> = IResult<T, U, VerboseError<T>>;
 
-pub fn parse<'a, M: ParseMsg<'a>>(msg: &'a str) -> Result<Message<M>, Error> {
+pub fn parse<'a, S: ParseMsg<'a>, M: ParseMsg<'a>>(msg: &'a str) -> Result<Message<S, M>, Error> {
     let (rem, pri) = parse_pri(msg)?;
     let (rem, version) = parse_version(rem)?;
+    let (rem, _) = space1(rem)?;
     let (rem, timestamp) = parse_part(rem)?;
+    let (rem, _) = space1(rem)?;
     let (rem, hostname) = parse_part(rem)?;
+    let (rem, _) = space1(rem)?;
     let (rem, app_name) = parse_part(rem)?;
+    let (rem, _) = space1(rem)?;
     let (rem, proc_id) = parse_part(rem)?;
-    let (rem, structured_data): (&'a str, Option<Vec<StructuredData>>) =
-        retuple(pair(space1, parse_optional_structured_data)(rem))?;
+    let (rem, _) = space1(rem)?;
+    let (rem, structured_data) = alt((map(tag("-"), |_| None), map(S::parse, Some)))(rem)?;
     let (rem, _) = space0(rem)?;
 
     let (_, router) = M::parse(rem)?;
@@ -72,9 +73,7 @@ fn parse_timestamp(timestamp: &str) -> Result<DateTime<FixedOffset>, Error> {
 }
 
 pub fn parse_part<'a>(part: &'a str) -> Res<&'a str, Option<&str>> {
-    let (rem, _) = space1(part)?;
-
-    let (rem, word) = take_until(" ")(rem)?;
+    let (rem, word) = take_until(" ")(part)?;
 
     if word == "-" {
         Ok((rem, None))

@@ -1,11 +1,11 @@
 use rsyslog::{
     parser::msg::{HerokuRouter, Raw},
-    SdParam, StructuredData,
+    SdParam, StructuredData, StructuredDataList,
 };
 
 #[test]
 fn test_simple() {
-    let msg = rsyslog::parse::<Raw>("<1>1 - - - - - -");
+    let msg = rsyslog::parse::<StructuredDataList, Raw>("<1>1 - - - - - -");
 
     assert_eq!(
         msg,
@@ -22,7 +22,9 @@ fn test_simple() {
         })
     );
 
-    let msg = rsyslog::parse::<Raw>("<1>1 2021-03-01T19:04:19.887695+00:00 - - - - -");
+    let msg = rsyslog::parse::<StructuredDataList, Raw>(
+        "<1>1 2021-03-01T19:04:19.887695+00:00 - - - - -",
+    );
 
     assert_eq!(
         msg,
@@ -41,7 +43,9 @@ fn test_simple() {
         })
     );
 
-    let msg = rsyslog::parse::<Raw>("<1>1 2021-03-01T19:04:19.887695+00:00 host - - - -");
+    let msg = rsyslog::parse::<StructuredDataList, Raw>(
+        "<1>1 2021-03-01T19:04:19.887695+00:00 host - - - -",
+    );
 
     assert_eq!(
         msg,
@@ -60,7 +64,9 @@ fn test_simple() {
         })
     );
 
-    let msg = rsyslog::parse::<Raw>("<1>1 2021-03-01T19:04:19.887695+00:00 host app_name - - -");
+    let msg = rsyslog::parse::<StructuredDataList, Raw>(
+        "<1>1 2021-03-01T19:04:19.887695+00:00 host app_name - - -",
+    );
 
     assert_eq!(
         msg,
@@ -79,8 +85,9 @@ fn test_simple() {
         })
     );
 
-    let msg =
-        rsyslog::parse::<Raw>("<1>1 2021-03-01T19:04:19.887695+00:00 host app_name proc_id - -");
+    let msg = rsyslog::parse::<StructuredDataList, Raw>(
+        "<1>1 2021-03-01T19:04:19.887695+00:00 host app_name proc_id - -",
+    );
 
     assert_eq!(
         msg,
@@ -99,7 +106,7 @@ fn test_simple() {
         })
     );
 
-    let msg = rsyslog::parse::<Raw>(
+    let msg = rsyslog::parse::<StructuredDataList, Raw>(
         "<1>1 2021-03-01T19:04:19.887695+00:00 host app_name proc_id [structured_data] -",
     );
 
@@ -115,10 +122,13 @@ fn test_simple() {
             hostname: Some("host".into()),
             app_name: Some("app_name".into()),
             proc_id: Some("proc_id".into()),
-            structured_data: Some(vec![StructuredData {
-                id: "structured_data",
-                params: vec![]
-            }]),
+            structured_data: Some(
+                vec![StructuredData {
+                    id: "structured_data",
+                    params: vec![]
+                }]
+                .into()
+            ),
             msg: Raw { msg: "-" }
         })
     );
@@ -126,7 +136,7 @@ fn test_simple() {
 
 #[test]
 fn complex_structured_data() {
-    let msg = rsyslog::parse::<Raw>("<1>1 2021-03-01T19:04:19.887695+00:00 host app_name proc_id [exampleSDID@32473 iut=\"3\" eventSource=\"Application\" eventID=\"1011\"] -");
+    let msg = rsyslog::parse::<StructuredDataList, Raw>("<1>1 2021-03-01T19:04:19.887695+00:00 host app_name proc_id [exampleSDID@32473 iut=\"3\" eventSource=\"Application\" eventID=\"1011\"] -");
 
     assert_eq!(
         msg,
@@ -140,23 +150,26 @@ fn complex_structured_data() {
             hostname: Some("host".into()),
             app_name: Some("app_name".into()),
             proc_id: Some("proc_id".into()),
-            structured_data: Some(vec![StructuredData {
-                id: "exampleSDID@32473",
-                params: vec![
-                    SdParam {
-                        name: "iut",
-                        value: "\"3\""
-                    },
-                    SdParam {
-                        name: "eventSource",
-                        value: "\"Application\""
-                    },
-                    SdParam {
-                        name: "eventID",
-                        value: "\"1011\""
-                    }
-                ]
-            }]),
+            structured_data: Some(
+                vec![StructuredData {
+                    id: "exampleSDID@32473",
+                    params: vec![
+                        SdParam {
+                            name: "iut",
+                            value: "\"3\""
+                        },
+                        SdParam {
+                            name: "eventSource",
+                            value: "\"Application\""
+                        },
+                        SdParam {
+                            name: "eventID",
+                            value: "\"1011\""
+                        }
+                    ]
+                }]
+                .into()
+            ),
             msg: Raw { msg: "-" }
         })
     );
@@ -164,7 +177,7 @@ fn complex_structured_data() {
 
 #[test]
 fn heroku_test_message() {
-    let msg = rsyslog::parse::<HerokuRouter>("<158>1 2021-03-01T19:04:19.887695+00:00 host heroku router - at=info method=POST path=\"/api/v1/events/smartcam\" host=ratatoskr.mobility46.se request_id=5599e09a-f8e3-4ed9-8be8-6883ce842cf2 fwd=\"157.230.107.240\" dyno=web.1 connect=0ms service=97ms status=200 bytes=140 protocol=https");
+    let msg = rsyslog::parse::<StructuredDataList, HerokuRouter>("<158>1 2021-03-01T19:04:19.887695+00:00 host heroku router - at=info method=POST path=\"/api/v1/events/smartcam\" host=ratatoskr.mobility46.se request_id=5599e09a-f8e3-4ed9-8be8-6883ce842cf2 fwd=\"157.230.107.240\" dyno=web.1 connect=0ms service=97ms status=200 bytes=140 protocol=https");
 
     assert_eq!(
         msg,
