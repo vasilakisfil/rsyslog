@@ -1,4 +1,7 @@
-use rsyslog::parser::msg::{HerokuRouter, Raw};
+use rsyslog::{
+    parser::msg::{HerokuRouter, Raw},
+    SdParam, StructuredData,
+};
 
 #[test]
 fn test_simple() {
@@ -112,7 +115,10 @@ fn test_simple() {
             hostname: Some("host".into()),
             app_name: Some("app_name".into()),
             proc_id: Some("proc_id".into()),
-            structured_data: Some("structured_data".into()),
+            structured_data: Some(vec![StructuredData {
+                id: "structured_data",
+                params: vec![]
+            }]),
             msg: Raw { msg: "-" }
         })
     );
@@ -134,9 +140,23 @@ fn complex_structured_data() {
             hostname: Some("host".into()),
             app_name: Some("app_name".into()),
             proc_id: Some("proc_id".into()),
-            structured_data: Some(
-                "exampleSDID@32473 iut=\"3\" eventSource=\"Application\" eventID=\"1011\"".into()
-            ),
+            structured_data: Some(vec![StructuredData {
+                id: "exampleSDID@32473",
+                params: vec![
+                    SdParam {
+                        name: "iut",
+                        value: "\"3\""
+                    },
+                    SdParam {
+                        name: "eventSource",
+                        value: "\"Application\""
+                    },
+                    SdParam {
+                        name: "eventID",
+                        value: "\"1011\""
+                    }
+                ]
+            }]),
             msg: Raw { msg: "-" }
         })
     );

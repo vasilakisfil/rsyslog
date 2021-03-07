@@ -2,7 +2,7 @@ pub mod structured_data;
 
 use crate::{
     parser::helpers::{parse_u8, retuple},
-    Error, Message, ParseMsg,
+    Error, Message, ParseMsg, StructuredData,
 };
 use chrono::{DateTime, FixedOffset};
 use nom::{
@@ -23,7 +23,8 @@ pub fn parse<'a, T: ParseMsg<'a>>(msg: &'a str) -> Result<Message<T>, Error> {
     let (rem, hostname) = parse_part(rem)?;
     let (rem, app_name) = parse_part(rem)?;
     let (rem, proc_id) = parse_part(rem)?;
-    let (rem, structured_data) = retuple(pair(space1, parse_optional_structured_data)(rem))?;
+    let (rem, structured_data): (&'a str, Option<Vec<StructuredData>>) =
+        retuple(pair(space1, parse_optional_structured_data)(rem))?;
     let (rem, _) = space0(rem)?;
 
     let (_, router) = T::parse(rem)?;

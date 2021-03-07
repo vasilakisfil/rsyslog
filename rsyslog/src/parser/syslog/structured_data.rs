@@ -11,35 +11,41 @@ use nom::{
 
 type Res<T, U> = IResult<T, U, VerboseError<T>>;
 
-pub fn parse_optional_structured_data(part: &str) -> Res<&str, Option<&str>> {
+pub fn parse_optional_structured_data(part: &str) -> Res<&str, Option<Vec<StructuredData>>> {
     use nom::combinator::map;
 
     let (rem, data) = alt((
         map(tag("-"), |_| None),
         map(parse_seq_structured_data, Some),
     ))(part)?;
-    let data = data.map(|d| *d.first().unwrap());
 
     Ok((rem, data))
 }
 
-fn parse_seq_structured_data(part: &str) -> Res<&str, Vec<&str>> {
+fn parse_seq_structured_data(part: &str) -> Res<&str, Vec<StructuredData>> {
     let (rem, data) = many1(parse_structured_data)(part)?;
 
+    //let foo: Vec<StructuredData> = many0(parse_structured_data_inner)(data)?;
     Ok((rem, data))
 }
 
-fn parse_structured_data<'a>(part: &'a str) -> Res<&'a str, &'a str> {
-    delimited::<_, _, _, _, VerboseError<&'a str>, _, _, _>(tag("["), take_until("]"), tag("]"))(
-        part,
-    )
+fn parse_structured_data<'a>(part: &'a str) -> Res<&'a str, StructuredData> {
+    let (rem, data) = delimited::<_, _, _, _, VerboseError<&'a str>, _, _, _>(
+        tag("["),
+        take_until("]"),
+        tag("]"),
+    )(part)?;
+
+    let (_, data): (&'a str, StructuredData) = parse_structured_data_inner(data)?;
+
+    Ok((rem, data))
 }
 
 fn parse_structured_data_inner(part: &str) -> Res<&str, StructuredData> {
     use nom::character::complete::space0;
 
     let (rem, _) = space0(part)?;
-    let (rem, id) = take_until(" ")(rem)?;
+    let (rem, id) = alt((take_until(" "), rest))(rem)?;
 
     let (rem, sd_params) = many0(parse_structured_elements)(rem)?;
 
@@ -63,21 +69,61 @@ mod tests {
 
     #[test]
     fn simple_structured_data() {
-        //parse_structured_data("[exampleSDID@32473 iut=\"3\" eventSource=\"Application\" eventID=\"1011\"]");
+        //parse_structured_data("");
         assert_eq!(
+            parse_optional_structured_data("-").expect("parsing data").1,
             None,
-            parse_optional_structured_data("-").expect("parsing data").1
         );
+
         assert_eq!(
-            Some("a"),
             parse_optional_structured_data("[a]")
                 .expect("parsing data")
-                .1
+                .1,
+            Some(vec![StructuredData {
+                id: "a",
+                params: vec![]
+            }]),
+        );
+
+        assert_eq!(
+            parse_optional_structured_data(
+                "[exampleSDID@32473 iut=\"3\" eventSource=\"Application\" eventID=\"1011\"]"
+            )
+            .expect("parsing data")
+            .1,
+            Some(vec![StructuredData {
+                id: "exampleSDID@32473",
+                params: vec![
+                    SdParam {
+                        name: "iut",
+                        value: "\"3\""
+                    },
+                    SdParam {
+                        name: "eventSource",
+                        value: "\"Application\""
+                    },
+                    SdParam {
+                        name: "eventID",
+                        value: "\"1011\""
+                    },
+                ]
+            }]),
         );
     }
 
     #[test]
     fn simple_structured_data_inner() {
+        assert_eq!(
+            parse_structured_data_inner("a"),
+            Ok((
+                "",
+                StructuredData {
+                    id: "a",
+                    params: vec![]
+                }
+            ))
+        );
+
         assert_eq!(
             parse_structured_data_inner("a key=value anotherkey=anothervalue"),
             Ok((

@@ -23,22 +23,22 @@ pub struct Message<'a, T> {
     pub hostname: Option<&'a str>,
     pub app_name: Option<&'a str>,
     pub proc_id: Option<&'a str>,
-    pub structured_data: Option<&'a str>,
+    pub structured_data: Option<Vec<StructuredData<'a>>>,
     pub msg: T,
 }
 
 #[allow(dead_code)]
 #[derive(Debug, Eq, PartialEq)]
 pub struct StructuredData<'a> {
-    id: &'a str,
-    params: Vec<SdParam<'a>>,
+    pub id: &'a str,
+    pub params: Vec<SdParam<'a>>,
 }
 
 #[allow(dead_code)]
 #[derive(Debug, Eq, PartialEq)]
 pub struct SdParam<'a> {
-    name: &'a str,
-    value: &'a str,
+    pub name: &'a str,
+    pub value: &'a str,
 }
 
 impl<'a> From<(&'a str, Vec<SdParam<'a>>)> for StructuredData<'a> {
