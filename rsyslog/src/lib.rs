@@ -6,6 +6,12 @@ mod parser;
 pub use error::Error;
 pub use parser::syslog::parse;
 
+type Res<T, U> = nom::IResult<T, U, nom::error::VerboseError<T>>;
+
+pub trait ParseMsg<'a> {
+    fn parse_router_msg(msg: &'a str) -> Res<&'a str, Self> where Self: Sized;
+}
+
 #[derive(Debug, Eq, PartialEq)]
 pub struct Message<'a, T> {
     pub facility: u8,
@@ -31,22 +37,6 @@ pub struct StructuredData<'a> {
 pub struct SdParam<'a> {
     name: &'a str,
     value: &'a str,
-}
-
-#[derive(Debug, Eq, PartialEq)]
-pub struct Router<'a> {
-    pub at: &'a str,
-    pub method: &'a str,
-    pub path: &'a str,
-    pub host: &'a str,
-    pub request_id: &'a str,
-    pub fwd: &'a str,
-    pub dyno: &'a str,
-    pub connect: &'a str,
-    pub service: &'a str,
-    pub status: u8,
-    pub bytes: u32,
-    pub protocol: &'a str,
 }
 
 impl<'a> From<(&'a str, Vec<SdParam<'a>>)> for StructuredData<'a> {

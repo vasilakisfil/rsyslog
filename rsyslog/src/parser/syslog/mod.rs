@@ -3,9 +3,10 @@ pub mod structured_data;
 use crate::{
     parser::{
         helpers::{parse_u8, retuple},
-        heroku::router::parse_router_msg,
+        msg::HerokuRouter,
     },
-    Error, Message, Router,
+    Error, Message,
+    ParseMsg
 };
 use chrono::{DateTime, FixedOffset};
 use nom::{
@@ -19,7 +20,7 @@ use structured_data::parse_optional_structured_data;
 
 type Res<T, U> = IResult<T, U, VerboseError<T>>;
 
-pub fn parse<'a>(msg: &'a str) -> Result<Message<Router>, Error> {
+pub fn parse<'a>(msg: &'a str) -> Result<Message<HerokuRouter>, Error> {
     let (rem, pri) = parse_pri(msg)?;
     let (rem, version) = parse_version(rem)?;
     let (rem, timestamp) = parse_part(rem)?;
@@ -28,7 +29,7 @@ pub fn parse<'a>(msg: &'a str) -> Result<Message<Router>, Error> {
     let (rem, proc_id) = parse_part(rem)?;
     let (_, structured_data) = retuple(pair(space1, parse_optional_structured_data)(rem))?;
 
-    let (_, router) = parse_typed_msg(rem)?;
+    let (_, router) = HerokuRouter::parse_router_msg(rem)?;
 
     let message = crate::Message {
         facility: pri >> 3,
@@ -43,10 +44,6 @@ pub fn parse<'a>(msg: &'a str) -> Result<Message<Router>, Error> {
     };
 
     Ok(message)
-}
-
-fn parse_typed_msg<'a>(part: &'a str) -> Res<&'a str, Router> {
-    parse_router_msg(part).map(|(rem, router)| (rem, router))
 }
 
 /*
