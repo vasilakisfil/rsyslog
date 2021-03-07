@@ -11,19 +11,19 @@ use nom::{
 
 type Res<T, U> = IResult<T, U, VerboseError<T>>;
 
-pub fn parse_optional_structured_data<'a>(part: &'a str) -> Res<&'a str, Option<&'a str>> {
+pub fn parse_optional_structured_data(part: &str) -> Res<&str, Option<&str>> {
     use nom::combinator::map;
 
     let (rem, data) = alt((
         map(tag("-"), |_| None),
-        map(parse_seq_structured_data, |s: Vec<&'a str>| Some(s)),
+        map(parse_seq_structured_data, Some),
     ))(part)?;
     let data = data.map(|d| *d.first().unwrap());
 
     Ok((rem, data))
 }
 
-fn parse_seq_structured_data<'a>(part: &'a str) -> Res<&'a str, Vec<&'a str>> {
+fn parse_seq_structured_data(part: &str) -> Res<&str, Vec<&str>> {
     let (rem, data) = many1(parse_structured_data)(part)?;
 
     Ok((rem, data))
@@ -35,7 +35,7 @@ fn parse_structured_data<'a>(part: &'a str) -> Res<&'a str, &'a str> {
     )
 }
 
-fn parse_structured_data_inner<'a>(part: &'a str) -> Res<&'a str, StructuredData<'a>> {
+fn parse_structured_data_inner(part: &str) -> Res<&str, StructuredData> {
     use nom::character::complete::space0;
 
     let (rem, _) = space0(part)?;

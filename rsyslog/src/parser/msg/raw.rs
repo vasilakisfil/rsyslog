@@ -1,9 +1,5 @@
-use crate::{ParseMsg};
-use nom::{
-    combinator::rest,
-    error::VerboseError,
-    IResult,
-};
+use crate::ParseMsg;
+use nom::{combinator::rest, error::VerboseError, IResult};
 
 type Res<T, U> = IResult<T, U, VerboseError<T>>;
 

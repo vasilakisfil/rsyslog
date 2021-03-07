@@ -42,18 +42,18 @@ impl<'a> ParseMsg<'a> for HerokuRouter<'a> {
         let (rem, protocol) = parse_router_end_word(rem, "protocol=")?;
 
         let router = Self {
-            at: at,
-            method: method,
-            path: path,
-            host: host,
-            request_id: request_id,
-            fwd: fwd,
-            dyno: dyno,
-            connect: connect,
-            service: service,
+            at,
+            method,
+            path,
+            host,
+            request_id,
+            fwd,
+            dyno,
+            connect,
+            service,
             status: helpers::parse_u8(status)?,
             bytes: helpers::parse_u32(bytes)?,
-            protocol: protocol,
+            protocol,
         };
 
         Ok((rem, router))

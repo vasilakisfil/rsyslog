@@ -9,7 +9,9 @@ pub use parser::syslog::parse;
 type Res<T, U> = nom::IResult<T, U, nom::error::VerboseError<T>>;
 
 pub trait ParseMsg<'a> {
-    fn parse(msg: &'a str) -> Res<&'a str, Self> where Self: Sized;
+    fn parse(msg: &'a str) -> Res<&'a str, Self>
+    where
+        Self: Sized;
 }
 
 #[derive(Debug, Eq, PartialEq)]

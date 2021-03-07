@@ -1,16 +1,13 @@
 pub mod structured_data;
 
 use crate::{
-    parser::{
-        helpers::{parse_u8, retuple},
-    },
-    Error, Message,
-    ParseMsg
+    parser::helpers::{parse_u8, retuple},
+    Error, Message, ParseMsg,
 };
 use chrono::{DateTime, FixedOffset};
 use nom::{
     bytes::complete::{tag, take_until},
-    character::complete::{digit1, space1, space0},
+    character::complete::{digit1, space0, space1},
     error::VerboseError,
     sequence::pair,
     IResult,
@@ -36,10 +33,10 @@ pub fn parse<'a, T: ParseMsg<'a>>(msg: &'a str) -> Result<Message<T>, Error> {
         severity: pri & 7,
         version,
         timestamp: timestamp.map(parse_timestamp).transpose()?,
-        hostname: hostname,
-        app_name: app_name,
-        proc_id: proc_id,
-        structured_data: structured_data,
+        hostname,
+        app_name,
+        proc_id,
+        structured_data,
         msg: router,
     };
 
@@ -51,7 +48,7 @@ fn parse_remaining<'a>(part: &'a str) -> Res<&'a str, Msg<Router>> {
     rest(part).map(|(rem, remaining)| (rem, Msg::Raw(remaining)))
 }*/
 
-fn parse_pri<'a>(part: &'a str) -> Res<&'a str, u8> {
+fn parse_pri(part: &str) -> Res<&str, u8> {
     let (rem, _) = take_until("<")(part)?;
     let (rem, _) = tag("<")(rem)?;
 
@@ -63,13 +60,13 @@ fn parse_pri<'a>(part: &'a str) -> Res<&'a str, u8> {
     Ok((rem, pri))
 }
 
-fn parse_version<'a>(part: &'a str) -> Res<&'a str, u8> {
+fn parse_version(part: &str) -> Res<&str, u8> {
     let (rem, version) = digit1(part)?;
 
     Ok((rem, parse_u8(version)?))
 }
 
-fn parse_timestamp<'a>(timestamp: &str) -> Result<DateTime<FixedOffset>, Error> {
+fn parse_timestamp(timestamp: &str) -> Result<DateTime<FixedOffset>, Error> {
     Ok(chrono::DateTime::parse_from_rfc3339(timestamp)?)
 }
 
