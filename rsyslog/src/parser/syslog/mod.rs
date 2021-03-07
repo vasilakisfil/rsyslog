@@ -3,7 +3,6 @@ pub mod structured_data;
 use crate::{
     parser::{
         helpers::{parse_u8, retuple},
-        msg::HerokuRouter,
     },
     Error, Message,
     ParseMsg
@@ -11,7 +10,7 @@ use crate::{
 use chrono::{DateTime, FixedOffset};
 use nom::{
     bytes::complete::{tag, take_until},
-    character::complete::{digit1, space1},
+    character::complete::{digit1, space1, space0},
     error::VerboseError,
     sequence::pair,
     IResult,
@@ -27,7 +26,8 @@ pub fn parse<'a, T: ParseMsg<'a>>(msg: &'a str) -> Result<Message<T>, Error> {
     let (rem, hostname) = parse_part(rem)?;
     let (rem, app_name) = parse_part(rem)?;
     let (rem, proc_id) = parse_part(rem)?;
-    let (_, structured_data) = retuple(pair(space1, parse_optional_structured_data)(rem))?;
+    let (rem, structured_data) = retuple(pair(space1, parse_optional_structured_data)(rem))?;
+    let (rem, _) = space0(rem)?;
 
     let (_, router) = T::parse(rem)?;
 
