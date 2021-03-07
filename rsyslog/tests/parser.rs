@@ -162,13 +162,13 @@ fn heroku_test_message() {
             msg: HerokuRouter {
                 at: "info",
                 method: "POST",
-                path: "\"/api/v1/events/smartcam\"",
+                path: "/api/v1/events/smartcam",
                 host: "ratatoskr.mobility46.se",
                 request_id: "5599e09a-f8e3-4ed9-8be8-6883ce842cf2",
-                fwd: "\"157.230.107.240\"",
+                fwd: "157.230.107.240",
                 dyno: "web.1",
-                connect: "0ms",
-                service: "97ms",
+                connect: 0,
+                service: 97,
                 status: 200,
                 bytes: 140,
                 protocol: "https"
