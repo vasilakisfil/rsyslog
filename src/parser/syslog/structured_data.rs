@@ -1,4 +1,4 @@
-use crate::{SdParam, StructuredData};
+use crate::ParseMsg;
 use nom::{
     branch::alt,
     bytes::complete::{tag, take_until},
@@ -11,22 +11,51 @@ use nom::{
 
 type Res<T, U> = IResult<T, U, VerboseError<T>>;
 
-pub fn parse_optional_structured_data(part: &str) -> Res<&str, Option<Vec<StructuredData>>> {
-    use nom::combinator::map;
+#[derive(Debug, Eq, PartialEq)]
+pub struct StructuredDataList<'a>(pub Vec<StructuredData<'a>>);
 
-    let (rem, data) = alt((
-        map(tag("-"), |_| None),
-        map(parse_seq_structured_data, Some),
-    ))(part)?;
-
-    Ok((rem, data))
+impl<'a> From<Vec<StructuredData<'a>>> for StructuredDataList<'a> {
+    fn from(list: Vec<StructuredData<'a>>) -> Self {
+        Self(list)
+    }
 }
 
-fn parse_seq_structured_data(part: &str) -> Res<&str, Vec<StructuredData>> {
-    let (rem, data) = many1(parse_structured_data)(part)?;
+impl<'a> ParseMsg<'a> for StructuredDataList<'a> {
+    fn parse(sd: &'a str) -> Res<&'a str, Self> {
+        let (rem, data) = many1(parse_structured_data)(sd)?;
 
-    //let foo: Vec<StructuredData> = many0(parse_structured_data_inner)(data)?;
-    Ok((rem, data))
+        Ok((rem, Self(data)))
+    }
+}
+
+#[derive(Debug, Eq, PartialEq)]
+pub struct StructuredData<'a> {
+    pub id: &'a str,
+    pub params: Vec<SdParam<'a>>,
+}
+
+#[derive(Debug, Eq, PartialEq)]
+pub struct SdParam<'a> {
+    pub name: &'a str,
+    pub value: &'a str,
+}
+
+impl<'a> From<(&'a str, Vec<SdParam<'a>>)> for StructuredData<'a> {
+    fn from(tuple: (&'a str, Vec<SdParam<'a>>)) -> Self {
+        Self {
+            id: tuple.0,
+            params: tuple.1,
+        }
+    }
+}
+
+impl<'a> From<(&'a str, &'a str)> for SdParam<'a> {
+    fn from(tuple: (&'a str, &'a str)) -> Self {
+        Self {
+            name: tuple.0,
+            value: tuple.1,
+        }
+    }
 }
 
 fn parse_structured_data<'a>(part: &'a str) -> Res<&'a str, StructuredData> {
@@ -69,29 +98,22 @@ mod tests {
 
     #[test]
     fn simple_structured_data() {
-        //parse_structured_data("");
         assert_eq!(
-            parse_optional_structured_data("-").expect("parsing data").1,
-            None,
-        );
-
-        assert_eq!(
-            parse_optional_structured_data("[a]")
-                .expect("parsing data")
-                .1,
-            Some(vec![StructuredData {
+            StructuredDataList::parse("[a]").expect("parsing data").1,
+            vec![StructuredData {
                 id: "a",
                 params: vec![]
-            }]),
+            }]
+            .into(),
         );
 
         assert_eq!(
-            parse_optional_structured_data(
+            StructuredDataList::parse(
                 "[exampleSDID@32473 iut=\"3\" eventSource=\"Application\" eventID=\"1011\"]"
             )
             .expect("parsing data")
             .1,
-            Some(vec![StructuredData {
+            vec![StructuredData {
                 id: "exampleSDID@32473",
                 params: vec![
                     SdParam {
@@ -107,7 +129,8 @@ mod tests {
                         value: "\"1011\""
                     },
                 ]
-            }]),
+            }]
+            .into(),
         );
     }
 

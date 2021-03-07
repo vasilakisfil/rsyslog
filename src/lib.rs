@@ -5,6 +5,7 @@ pub mod parser;
 
 pub use error::Error;
 pub use parser::syslog::parse;
+pub use parser::syslog::structured_data::{SdParam, StructuredData, StructuredDataList};
 
 type Res<T, U> = nom::IResult<T, U, nom::error::VerboseError<T>>;
 
@@ -15,7 +16,7 @@ pub trait ParseMsg<'a> {
 }
 
 #[derive(Debug, Eq, PartialEq)]
-pub struct Message<'a, M> {
+pub struct Message<'a, S, M> {
     pub facility: u8,
     pub severity: u8,
     pub version: u8,
@@ -23,38 +24,6 @@ pub struct Message<'a, M> {
     pub hostname: Option<&'a str>,
     pub app_name: Option<&'a str>,
     pub proc_id: Option<&'a str>,
-    pub structured_data: Option<Vec<StructuredData<'a>>>,
+    pub structured_data: Option<S>,
     pub msg: M,
-}
-
-#[allow(dead_code)]
-#[derive(Debug, Eq, PartialEq)]
-pub struct StructuredData<'a> {
-    pub id: &'a str,
-    pub params: Vec<SdParam<'a>>,
-}
-
-#[allow(dead_code)]
-#[derive(Debug, Eq, PartialEq)]
-pub struct SdParam<'a> {
-    pub name: &'a str,
-    pub value: &'a str,
-}
-
-impl<'a> From<(&'a str, Vec<SdParam<'a>>)> for StructuredData<'a> {
-    fn from(tuple: (&'a str, Vec<SdParam<'a>>)) -> Self {
-        Self {
-            id: tuple.0,
-            params: tuple.1,
-        }
-    }
-}
-
-impl<'a> From<(&'a str, &'a str)> for SdParam<'a> {
-    fn from(tuple: (&'a str, &'a str)) -> Self {
-        Self {
-            name: tuple.0,
-            value: tuple.1,
-        }
-    }
 }
