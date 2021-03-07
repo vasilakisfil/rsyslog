@@ -15,7 +15,7 @@ pub trait ParseMsg<'a> {
 }
 
 #[derive(Debug, Eq, PartialEq)]
-pub struct Message<'a, T> {
+pub struct Message<'a, M> {
     pub facility: u8,
     pub severity: u8,
     pub version: u8,
@@ -24,7 +24,7 @@ pub struct Message<'a, T> {
     pub app_name: Option<&'a str>,
     pub proc_id: Option<&'a str>,
     pub structured_data: Option<Vec<StructuredData<'a>>>,
-    pub msg: T,
+    pub msg: M,
 }
 
 #[allow(dead_code)]

@@ -16,7 +16,7 @@ use structured_data::parse_optional_structured_data;
 
 type Res<T, U> = IResult<T, U, VerboseError<T>>;
 
-pub fn parse<'a, T: ParseMsg<'a>>(msg: &'a str) -> Result<Message<T>, Error> {
+pub fn parse<'a, M: ParseMsg<'a>>(msg: &'a str) -> Result<Message<M>, Error> {
     let (rem, pri) = parse_pri(msg)?;
     let (rem, version) = parse_version(rem)?;
     let (rem, timestamp) = parse_part(rem)?;
@@ -27,7 +27,7 @@ pub fn parse<'a, T: ParseMsg<'a>>(msg: &'a str) -> Result<Message<T>, Error> {
         retuple(pair(space1, parse_optional_structured_data)(rem))?;
     let (rem, _) = space0(rem)?;
 
-    let (_, router) = T::parse(rem)?;
+    let (_, router) = M::parse(rem)?;
 
     let message = crate::Message {
         facility: pri >> 3,
