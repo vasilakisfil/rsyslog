@@ -2,6 +2,7 @@ use crate::ParseMsg;
 use nom::{
     branch::alt,
     bytes::complete::{tag, take_until},
+    combinator::map,
     combinator::rest,
     error::VerboseError,
     multi::{many0, many1},
@@ -11,20 +12,11 @@ use nom::{
 
 type Res<T, U> = IResult<T, U, VerboseError<T>>;
 
-#[derive(Debug, Eq, PartialEq)]
-pub struct StructuredDataList<'a>(pub Vec<StructuredData<'a>>);
-
-impl<'a> From<Vec<StructuredData<'a>>> for StructuredDataList<'a> {
-    fn from(list: Vec<StructuredData<'a>>) -> Self {
-        Self(list)
-    }
-}
-
-impl<'a> ParseMsg<'a> for StructuredDataList<'a> {
+impl<'a> ParseMsg<'a> for Vec<StructuredData<'a>> {
     fn parse(sd: &'a str) -> Res<&'a str, Self> {
-        let (rem, data) = many1(parse_structured_data)(sd)?;
+        let (rem, sdata) = alt((map(tag("-"), |_| vec![]), many1(parse_structured_data)))(sd)?;
 
-        Ok((rem, Self(data)))
+        Ok((rem, sdata))
     }
 }
 
@@ -99,16 +91,17 @@ mod tests {
     #[test]
     fn simple_structured_data() {
         assert_eq!(
-            StructuredDataList::parse("[a]").expect("parsing data").1,
+            <Vec<StructuredData> as ParseMsg>::parse("[a]")
+                .expect("parsing data")
+                .1,
             vec![StructuredData {
                 id: "a",
                 params: vec![]
             }]
-            .into(),
         );
 
         assert_eq!(
-            StructuredDataList::parse(
+            <Vec<StructuredData> as ParseMsg>::parse(
                 "[exampleSDID@32473 iut=\"3\" eventSource=\"Application\" eventID=\"1011\"]"
             )
             .expect("parsing data")
@@ -130,7 +123,6 @@ mod tests {
                     },
                 ]
             }]
-            .into(),
         );
     }
 
