@@ -4,7 +4,7 @@ pub mod parser;
 pub use error::Error;
 pub use parser::{
     msg::{HerokuRouter, Raw},
-    syslog::structured_data::{SdParam, StructuredData},
+    structured_data::{SdParam, StructuredData},
 };
 
 pub type DateTime = chrono::DateTime<chrono::FixedOffset>;
@@ -18,7 +18,12 @@ pub trait ParseMsg<'a> {
 }
 
 #[derive(Debug, Eq, PartialEq)]
-pub struct Message<'a, T = Option<DateTime>, S = Vec<StructuredData<'a>>, M = Raw<'a>> {
+pub struct Message<'a, T = Option<DateTime>, S = Vec<StructuredData<'a>>, M = Raw<'a>>
+where
+    T: ParseMsg<'a>,
+    S: ParseMsg<'a>,
+    M: ParseMsg<'a>,
+{
     pub facility: u8,
     pub severity: u8,
     pub version: u8,
@@ -37,6 +42,6 @@ where
     M: ParseMsg<'a>,
 {
     pub fn parse(msg: &'a str) -> Result<Message<'a, T, S, M>, Error<'a>> {
-        parser::syslog::parse(msg)
+        parser::parse(msg)
     }
 }
