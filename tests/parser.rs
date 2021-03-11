@@ -4,7 +4,7 @@ use rsyslog::{
 };
 
 #[test]
-fn test_simple() {
+fn empty_message() {
     let msg: Result<Message, Error> = Message::parse("<1>1 - - - - - -");
 
     assert_eq!(
@@ -21,7 +21,10 @@ fn test_simple() {
             msg: Raw { msg: "-" }
         })
     );
+}
 
+#[test]
+fn timestamp_message() {
     let msg: Result<Message, Error> =
         Message::parse("<1>1 2021-03-01T19:04:19.887695+00:00 - - - - -");
 
@@ -31,9 +34,7 @@ fn test_simple() {
             facility: 0,
             severity: 1,
             version: 1,
-            timestamp: Some(
-                chrono::DateTime::parse_from_rfc3339("2021-03-01T19:04:19.887695+00:00").unwrap()
-            ),
+            timestamp: Some("2021-03-01T19:04:19.887695+00:00"),
             hostname: None,
             app_name: None,
             proc_id: None,
@@ -41,7 +42,10 @@ fn test_simple() {
             msg: Raw { msg: "-" }
         })
     );
+}
 
+#[test]
+fn timestamp_host_message() {
     let msg: Result<Message, Error> =
         Message::parse("<1>1 2021-03-01T19:04:19.887695+00:00 host - - - -");
 
@@ -51,9 +55,7 @@ fn test_simple() {
             facility: 0,
             severity: 1,
             version: 1,
-            timestamp: Some(
-                chrono::DateTime::parse_from_rfc3339("2021-03-01T19:04:19.887695+00:00").unwrap()
-            ),
+            timestamp: Some("2021-03-01T19:04:19.887695+00:00"),
             hostname: Some("host".into()),
             app_name: None,
             proc_id: None,
@@ -61,7 +63,10 @@ fn test_simple() {
             msg: Raw { msg: "-" }
         })
     );
+}
 
+#[test]
+fn timestamp_host_app_name_message() {
     let msg: Result<Message, Error> =
         Message::parse("<1>1 2021-03-01T19:04:19.887695+00:00 host app_name - - -");
 
@@ -71,9 +76,7 @@ fn test_simple() {
             facility: 0,
             severity: 1,
             version: 1,
-            timestamp: Some(
-                chrono::DateTime::parse_from_rfc3339("2021-03-01T19:04:19.887695+00:00").unwrap()
-            ),
+            timestamp: Some("2021-03-01T19:04:19.887695+00:00"),
             hostname: Some("host".into()),
             app_name: Some("app_name".into()),
             proc_id: None,
@@ -81,7 +84,10 @@ fn test_simple() {
             msg: Raw { msg: "-" }
         })
     );
+}
 
+#[test]
+fn timestamp_host_app_name_proc_id_message() {
     let msg: Result<Message, Error> =
         Message::parse("<1>1 2021-03-01T19:04:19.887695+00:00 host app_name proc_id - -");
 
@@ -91,9 +97,7 @@ fn test_simple() {
             facility: 0,
             severity: 1,
             version: 1,
-            timestamp: Some(
-                chrono::DateTime::parse_from_rfc3339("2021-03-01T19:04:19.887695+00:00").unwrap()
-            ),
+            timestamp: Some("2021-03-01T19:04:19.887695+00:00"),
             hostname: Some("host".into()),
             app_name: Some("app_name".into()),
             proc_id: Some("proc_id".into()),
@@ -101,7 +105,10 @@ fn test_simple() {
             msg: Raw { msg: "-" }
         })
     );
+}
 
+#[test]
+fn timestamp_host_app_name_proc_id_structured_data_message() {
     let msg: Result<Message, Error> = Message::parse(
         "<1>1 2021-03-01T19:04:19.887695+00:00 host app_name proc_id [structured_data] -",
     );
@@ -112,9 +119,7 @@ fn test_simple() {
             facility: 0,
             severity: 1,
             version: 1,
-            timestamp: Some(
-                chrono::DateTime::parse_from_rfc3339("2021-03-01T19:04:19.887695+00:00").unwrap()
-            ),
+            timestamp: Some("2021-03-01T19:04:19.887695+00:00"),
             hostname: Some("host".into()),
             app_name: Some("app_name".into()),
             proc_id: Some("proc_id".into()),
@@ -128,7 +133,7 @@ fn test_simple() {
 }
 
 #[test]
-fn complex_structured_data() {
+fn complex_message() {
     let msg: Result<Message, Error> = Message::parse("<1>1 2021-03-01T19:04:19.887695+00:00 host app_name proc_id [exampleSDID@32473 iut=\"3\" eventSource=\"Application\" eventID=\"1011\"] -");
 
     assert_eq!(
@@ -137,9 +142,7 @@ fn complex_structured_data() {
             facility: 0,
             severity: 1,
             version: 1,
-            timestamp: Some(
-                chrono::DateTime::parse_from_rfc3339("2021-03-01T19:04:19.887695+00:00").unwrap()
-            ),
+            timestamp: Some("2021-03-01T19:04:19.887695+00:00"),
             hostname: Some("host".into()),
             app_name: Some("app_name".into()),
             proc_id: Some("proc_id".into()),

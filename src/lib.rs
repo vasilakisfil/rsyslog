@@ -7,18 +7,27 @@ pub use parser::{
     structured_data::{SdParam, StructuredData},
 };
 
+#[cfg(feature = "chrono-timestamp")]
 pub type DateTime = chrono::DateTime<chrono::FixedOffset>;
 
 type Res<T, U> = nom::IResult<T, U, nom::error::VerboseError<T>>;
 
+#[cfg(not(feature = "serde-serialize"))]
 pub trait ParseMsg<'a> {
+    fn parse(msg: &'a str) -> Res<&'a str, Self>
+    where
+        Self: Sized;
+}
+#[cfg(feature = "serde-serialize")]
+pub trait ParseMsg<'a>: serde::Serialize {
     fn parse(msg: &'a str) -> Res<&'a str, Self>
     where
         Self: Sized;
 }
 
 #[derive(Debug, Eq, PartialEq)]
-pub struct Message<'a, T = Option<DateTime>, S = Vec<StructuredData<'a>>, M = Raw<'a>>
+#[cfg_attr(feature = "serde-serialize", derive(serde::Serialize))]
+pub struct Message<'a, T = Option<&'a str>, S = Vec<StructuredData<'a>>, M = Raw<'a>>
 where
     T: ParseMsg<'a>,
     S: ParseMsg<'a>,
