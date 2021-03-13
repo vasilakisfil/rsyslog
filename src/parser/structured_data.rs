@@ -1,4 +1,4 @@
-use crate::ParseMsg;
+use crate::{Error, NomRes, ParseMsg};
 use nom::{
     branch::alt,
     bytes::complete::{tag, take_until},
@@ -7,13 +7,10 @@ use nom::{
     error::VerboseError,
     multi::{many0, many1},
     sequence::delimited,
-    IResult,
 };
 
-type Res<T, U> = IResult<T, U, VerboseError<T>>;
-
 impl<'a> ParseMsg<'a> for Vec<StructuredData<'a>> {
-    fn parse(sd: &'a str) -> Res<&'a str, Self> {
+    fn parse(sd: &'a str) -> Result<(&'a str, Self), Error> {
         let (rem, sdata) = alt((map(tag("-"), |_| vec![]), many1(parse_structured_data)))(sd)?;
 
         Ok((rem, sdata))
@@ -50,7 +47,7 @@ impl<'a> From<(&'a str, &'a str)> for SdParam<'a> {
     }
 }
 
-fn parse_structured_data<'a>(part: &'a str) -> Res<&'a str, StructuredData> {
+fn parse_structured_data<'a>(part: &'a str) -> NomRes<&'a str, StructuredData> {
     let (rem, data) = delimited::<_, _, _, _, VerboseError<&'a str>, _, _, _>(
         tag("["),
         take_until("]"),
@@ -62,7 +59,7 @@ fn parse_structured_data<'a>(part: &'a str) -> Res<&'a str, StructuredData> {
     Ok((rem, data))
 }
 
-fn parse_structured_data_inner(part: &str) -> Res<&str, StructuredData> {
+fn parse_structured_data_inner(part: &str) -> NomRes<&str, StructuredData> {
     use nom::character::complete::space0;
 
     let (rem, _) = space0(part)?;
@@ -73,7 +70,7 @@ fn parse_structured_data_inner(part: &str) -> Res<&str, StructuredData> {
     Ok((rem, (id, sd_params).into()))
 }
 
-fn parse_structured_elements<'a>(part: &'a str) -> Res<&'a str, SdParam> {
+fn parse_structured_elements<'a>(part: &'a str) -> NomRes<&'a str, SdParam> {
     use nom::character::complete::space0;
 
     let (rem, _) = space0(part)?;

@@ -10,17 +10,17 @@ pub use parser::{
 #[cfg(feature = "chrono-timestamp")]
 pub type DateTime = chrono::DateTime<chrono::FixedOffset>;
 
-type Res<T, U> = nom::IResult<T, U, nom::error::VerboseError<T>>;
+pub(crate) type NomRes<T, U> = nom::IResult<T, U, nom::error::VerboseError<T>>;
 
 #[cfg(not(feature = "serde-serialize"))]
 pub trait ParseMsg<'a> {
-    fn parse(msg: &'a str) -> Res<&'a str, Self>
+    fn parse(msg: &'a str) -> Result<(&'a str, Self), Error>
     where
         Self: Sized;
 }
 #[cfg(feature = "serde-serialize")]
 pub trait ParseMsg<'a>: serde::Serialize {
-    fn parse(msg: &'a str) -> Res<&'a str, Self>
+    fn parse(msg: &'a str) -> Result<(&'a str, Self), Error>
     where
         Self: Sized;
 }

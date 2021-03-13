@@ -1,18 +1,15 @@
-use crate::ParseMsg;
-use nom::{error::VerboseError, IResult};
-
-type Res<T, U> = IResult<T, U, VerboseError<T>>;
+use crate::{Error, ParseMsg};
 
 pub struct Skip;
 
 impl<'a> ParseMsg<'a> for Skip {
-    fn parse(part: &'a str) -> Res<&'a str, Self> {
+    fn parse(part: &'a str) -> Result<(&'a str, Self), Error> {
         Ok((part, Self))
     }
 }
 
 impl<'a> ParseMsg<'a> for Vec<Skip> {
-    fn parse(part: &'a str) -> Res<&'a str, Self> {
+    fn parse(part: &'a str) -> Result<(&'a str, Self), Error> {
         Ok((part, vec![]))
     }
 }

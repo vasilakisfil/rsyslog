@@ -1,18 +1,16 @@
-use crate::{parser::helpers, ParseMsg};
+use crate::{parser::helpers, Error, NomRes, ParseMsg};
 use nom::{
     branch::alt,
     bytes::complete::{tag, take_until},
     combinator::rest,
-    error::VerboseError,
     sequence::tuple,
-    IResult,
 };
-
-type Res<T, U> = IResult<T, U, VerboseError<T>>;
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct HerokuRouter<'a> {
     pub at: &'a str,
+    //pub code: &'a str,
+    //pub desc: &'a str,
     pub method: &'a str,
     pub path: &'a str,
     pub host: &'a str,
@@ -27,7 +25,7 @@ pub struct HerokuRouter<'a> {
 }
 
 impl<'a> ParseMsg<'a> for HerokuRouter<'a> {
-    fn parse(msg: &'a str) -> Res<&'a str, Self> {
+    fn parse(msg: &'a str) -> Result<(&'a str, Self), Error> {
         let (rem, at) = parse_word(msg, "at=", " ")?;
         let (rem, method) = parse_word(rem, "method=", " ")?;
         let (rem, path) = parse_word(rem, "path=\"", "\" ")?;
@@ -60,13 +58,14 @@ impl<'a> ParseMsg<'a> for HerokuRouter<'a> {
     }
 }
 
-pub fn parse_word<'a>(part: &'a str, start: &'a str, stop: &'a str) -> Res<&'a str, &'a str> {
+pub fn parse_word<'a>(part: &'a str, start: &'a str, stop: &'a str) -> NomRes<&'a str, &'a str> {
+    //TODO: first take until scary here, should be tag instead
     let (rem, (_, _, el)) = tuple((take_until(start), tag(start), take_until(stop)))(part)?;
 
     Ok((rem, el))
 }
 
-pub fn parse_end_word<'a>(part: &'a str, element: &'a str) -> Res<&'a str, &'a str> {
+pub fn parse_end_word<'a>(part: &'a str, element: &'a str) -> NomRes<&'a str, &'a str> {
     let (rem, (_, _, el)) = tuple((
         take_until(element),
         tag(element),

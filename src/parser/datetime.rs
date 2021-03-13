@@ -1,11 +1,9 @@
-use crate::ParseMsg;
-use nom::{bytes::complete::take_until, error::VerboseError, IResult};
-
-type Res<T, U> = IResult<T, U, VerboseError<T>>;
+use crate::{Error, ParseMsg};
+use nom::bytes::complete::take_until;
 
 #[cfg(feature = "chrono-timestamp")]
 impl<'a> ParseMsg<'a> for Option<crate::DateTime> {
-    fn parse(part: &'a str) -> Res<&'a str, Self> {
+    fn parse(part: &'a str) -> Result<(&'a str, Self), Error> {
         let (rem, word) = take_until(" ")(part)?;
 
         match word {
@@ -21,7 +19,7 @@ impl<'a> ParseMsg<'a> for Option<crate::DateTime> {
 }
 
 impl<'a> ParseMsg<'a> for Option<&'a str> {
-    fn parse(part: &'a str) -> Res<&'a str, Self> {
+    fn parse(part: &'a str) -> Result<(&'a str, Self), Error> {
         let (rem, word) = take_until(" ")(part)?;
 
         match word {
