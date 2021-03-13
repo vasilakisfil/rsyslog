@@ -1,7 +1,5 @@
-use crate::ParseMsg;
-use nom::{combinator::rest, error::VerboseError, IResult};
-
-type Res<T, U> = IResult<T, U, VerboseError<T>>;
+use crate::{Error, ParseMsg};
+use nom::combinator::rest;
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct Raw<'a> {
@@ -15,7 +13,7 @@ impl<'a> From<&'a str> for Raw<'a> {
 }
 
 impl<'a> ParseMsg<'a> for Raw<'a> {
-    fn parse(msg: &'a str) -> Res<&'a str, Self> {
+    fn parse(msg: &'a str) -> Result<(&'a str, Self), Error> {
         let (rem, msg) = rest(msg)?;
 
         Ok((rem, msg.into()))
@@ -34,7 +32,7 @@ impl<'a> From<&'a str> for LineRaw<'a> {
 }
 
 impl<'a> ParseMsg<'a> for LineRaw<'a> {
-    fn parse(msg: &'a str) -> Res<&'a str, Self> {
+    fn parse(msg: &'a str) -> Result<(&'a str, Self), Error> {
         //TODO: should use terminated with is_not maybe ?
         use nom::{
             character::complete::{line_ending, not_line_ending},
