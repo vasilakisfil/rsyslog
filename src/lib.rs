@@ -40,6 +40,7 @@ where
     pub hostname: Option<&'a str>,
     pub app_name: Option<&'a str>,
     pub proc_id: Option<&'a str>,
+    pub msg_id: Option<&'a str>,
     pub structured_data: S,
     pub msg: M,
 }
@@ -59,6 +60,7 @@ pub struct Originator<'a> {
     pub hostname: Option<&'a str>,
     pub app_name: Option<&'a str>,
     pub proc_id: Option<&'a str>,
+    pub msg_id: Option<&'a str>,
 }
 
 pub trait ParseMsg<'a> {

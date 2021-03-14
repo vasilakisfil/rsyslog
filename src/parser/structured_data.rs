@@ -78,6 +78,8 @@ fn parse_structured_elements<'a>(part: &'a str) -> NomRes<&'a str, SdParam> {
     let (key_value_rem, key) = take_until("=")(key_value)?;
     let (value, _) = tag("=")(key_value_rem)?;
 
+    let value: &str = &value[1..value.len() - 1];
+
     Ok((rem, (key, value).into()))
 }
 
@@ -108,15 +110,15 @@ mod tests {
                 params: vec![
                     SdParam {
                         name: "iut",
-                        value: "\"3\""
+                        value: "3"
                     },
                     SdParam {
                         name: "eventSource",
-                        value: "\"Application\""
+                        value: "Application"
                     },
                     SdParam {
                         name: "eventID",
-                        value: "\"1011\""
+                        value: "1011"
                     },
                 ]
             }]
@@ -137,7 +139,7 @@ mod tests {
         );
 
         assert_eq!(
-            parse_structured_data_inner("a key=value anotherkey=anothervalue"),
+            parse_structured_data_inner(r#"a key="value" anotherkey="anothervalue""#),
             Ok((
                 "",
                 StructuredData {
@@ -167,15 +169,15 @@ mod tests {
                     params: vec![
                         SdParam {
                             name: "iut",
-                            value: "\"3\""
+                            value: "3"
                         },
                         SdParam {
                             name: "eventSource",
-                            value: "\"Application\""
+                            value: "Application"
                         },
                         SdParam {
                             name: "eventID",
-                            value: "\"1011\""
+                            value: "1011"
                         }
                     ]
                 }

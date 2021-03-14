@@ -4,6 +4,8 @@ pub mod msg;
 pub mod skip;
 pub mod structured_data;
 
+pub use skip::Skip;
+
 use crate::{Error, Message, NomRes, Originator, ParseMsg, ParsePart};
 use nom::{
     bytes::complete::{tag, take_until},
@@ -24,6 +26,8 @@ pub(crate) fn parse<'a, T: ParsePart<'a>, S: ParsePart<'a>, M: ParseMsg<'a>>(
     let (rem, _) = space0(rem)?;
     let (rem, proc_id) = parse_part(rem)?;
     let (rem, _) = space0(rem)?;
+    let (rem, msg_id) = parse_part(rem)?;
+    let (rem, _) = space0(rem)?;
     let (rem, structured_data) = S::parse(rem)?;
     let (rem, _) = space0(rem)?;
 
@@ -31,6 +35,7 @@ pub(crate) fn parse<'a, T: ParsePart<'a>, S: ParsePart<'a>, M: ParseMsg<'a>>(
         hostname,
         app_name,
         proc_id,
+        msg_id,
     };
 
     let (_, msg) = M::parse(rem, partial_msg)?;
@@ -43,6 +48,7 @@ pub(crate) fn parse<'a, T: ParsePart<'a>, S: ParsePart<'a>, M: ParseMsg<'a>>(
         hostname,
         app_name,
         proc_id,
+        msg_id,
         structured_data,
         msg,
     };
