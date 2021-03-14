@@ -1,4 +1,4 @@
-use crate::{Error, NomRes, ParseMsg};
+use crate::{Error, NomRes, ParsePart};
 use nom::{
     branch::alt,
     bytes::complete::{tag, take_until},
@@ -9,7 +9,7 @@ use nom::{
     sequence::delimited,
 };
 
-impl<'a> ParseMsg<'a> for Vec<StructuredData<'a>> {
+impl<'a> ParsePart<'a> for Vec<StructuredData<'a>> {
     fn parse(sd: &'a str) -> Result<(&'a str, Self), Error> {
         let (rem, sdata) = alt((map(tag("-"), |_| vec![]), many1(parse_structured_data)))(sd)?;
 
@@ -88,7 +88,7 @@ mod tests {
     #[test]
     fn simple_structured_data() {
         assert_eq!(
-            <Vec<StructuredData> as ParseMsg>::parse("[a]")
+            <Vec<StructuredData> as ParsePart>::parse("[a]")
                 .expect("parsing data")
                 .1,
             vec![StructuredData {
@@ -98,7 +98,7 @@ mod tests {
         );
 
         assert_eq!(
-            <Vec<StructuredData> as ParseMsg>::parse(
+            <Vec<StructuredData> as ParsePart>::parse(
                 "[exampleSDID@32473 iut=\"3\" eventSource=\"Application\" eventID=\"1011\"]"
             )
             .expect("parsing data")

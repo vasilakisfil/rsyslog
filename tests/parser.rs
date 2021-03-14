@@ -170,7 +170,7 @@ fn complex_message() {
 
 #[test]
 fn heroku_test_message() {
-    let msg: Result<Message<_, _, HerokuRouter>, Error> = Message::parse("<158>1 2021-03-01T19:04:19.887695+00:00 host heroku router - at=info method=POST path=\"/api/v1/events/smartcam\" host=ratatoskr.mobility46.se request_id=5599e09a-f8e3-4ed9-8be8-6883ce842cf2 fwd=\"157.230.107.240\" dyno=web.1 connect=0ms service=97ms status=200 bytes=140 protocol=https");
+    let msg: Result<Message<_, Vec<StructuredData>, HerokuRouter>, Error> = Message::parse("<158>1 2021-03-01T19:04:19.887695+00:00 host heroku router - at=info method=POST path=\"/api/v1/events/smartcam\" host=ratatoskr.mobility46.se request_id=5599e09a-f8e3-4ed9-8be8-6883ce842cf2 fwd=\"157.230.107.240\" dyno=web.1 connect=0ms service=97ms status=200 bytes=140 protocol=https");
 
     assert_eq!(
         msg,
@@ -178,9 +178,7 @@ fn heroku_test_message() {
             facility: 19,
             severity: 6,
             version: 1,
-            timestamp: Some(
-                chrono::DateTime::parse_from_rfc3339("2021-03-01T19:04:19.887695+00:00").unwrap()
-            ),
+            timestamp: Some("2021-03-01T19:04:19.887695+00:00"),
             hostname: Some("host"),
             app_name: Some("heroku"),
             proc_id: Some("router"),

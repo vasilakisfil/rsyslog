@@ -4,13 +4,13 @@ pub mod msg;
 pub mod skip;
 pub mod structured_data;
 
-use crate::{Error, Message, NomRes, ParseMsg};
+use crate::{Error, Message, NomRes, Originator, ParseMsg, ParsePart};
 use nom::{
     bytes::complete::{tag, take_until},
     character::complete::{digit1, space0},
 };
 
-pub(crate) fn parse<'a, T: ParseMsg<'a>, S: ParseMsg<'a>, M: ParseMsg<'a>>(
+pub(crate) fn parse<'a, T: ParsePart<'a>, S: ParsePart<'a>, M: ParseMsg<'a>>(
     msg: &'a str,
 ) -> Result<Message<'a, T, S, M>, Error<'a>> {
     let (rem, pri) = parse_pri(msg)?;
@@ -27,7 +27,13 @@ pub(crate) fn parse<'a, T: ParseMsg<'a>, S: ParseMsg<'a>, M: ParseMsg<'a>>(
     let (rem, structured_data) = S::parse(rem)?;
     let (rem, _) = space0(rem)?;
 
-    let (_, router) = M::parse(rem)?;
+    let partial_msg = Originator {
+        hostname,
+        app_name,
+        proc_id,
+    };
+
+    let (_, msg) = M::parse(rem, partial_msg)?;
 
     let message = crate::Message {
         facility: pri >> 3,
@@ -38,7 +44,7 @@ pub(crate) fn parse<'a, T: ParseMsg<'a>, S: ParseMsg<'a>, M: ParseMsg<'a>>(
         app_name,
         proc_id,
         structured_data,
-        msg: router,
+        msg,
     };
 
     Ok(message)

@@ -1,4 +1,4 @@
-use crate::{parser::helpers, Error, NomRes, ParseMsg};
+use crate::{parser::helpers, Error, NomRes, Originator, ParseMsg};
 use nom::{
     branch::alt,
     bytes::complete::{tag, take_until},
@@ -25,7 +25,7 @@ pub struct HerokuRouter<'a> {
 }
 
 impl<'a> ParseMsg<'a> for HerokuRouter<'a> {
-    fn parse(msg: &'a str) -> Result<(&'a str, Self), Error> {
+    fn parse(msg: &'a str, _: Originator) -> Result<(&'a str, Self), Error<'a>> {
         let (rem, at) = parse_word(msg, "at=", " ")?;
         let (rem, method) = parse_word(rem, "method=", " ")?;
         let (rem, path) = parse_word(rem, "path=\"", "\" ")?;
