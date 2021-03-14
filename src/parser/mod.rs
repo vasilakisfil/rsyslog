@@ -4,7 +4,10 @@ pub mod msg;
 pub mod skip;
 pub mod structured_data;
 
+#[cfg(feature = "chrono-timestamp")]
+pub type DateTime = chrono::DateTime<chrono::FixedOffset>;
 pub use skip::Skip;
+pub use structured_data::{SdParam, StructuredData};
 
 use crate::{Error, Message, NomRes, Originator, ParseMsg, ParsePart};
 use nom::{
@@ -14,7 +17,7 @@ use nom::{
 
 pub(crate) fn parse<'a, T: ParsePart<'a>, S: ParsePart<'a>, M: ParseMsg<'a>>(
     msg: &'a str,
-) -> Result<Message<'a, T, S, M>, Error<'a>> {
+) -> Result<(&'a str, Message<'a, T, S, M>), Error<'a>> {
     let (rem, pri) = parse_pri(msg)?;
     let (rem, version) = parse_version(rem)?;
     let (rem, _) = space0(rem)?;
@@ -38,7 +41,7 @@ pub(crate) fn parse<'a, T: ParsePart<'a>, S: ParsePart<'a>, M: ParseMsg<'a>>(
         msg_id,
     };
 
-    let (_, msg) = M::parse(rem, partial_msg)?;
+    let (rem, msg) = M::parse(rem, partial_msg)?;
 
     let message = crate::Message {
         facility: pri >> 3,
@@ -53,7 +56,7 @@ pub(crate) fn parse<'a, T: ParsePart<'a>, S: ParsePart<'a>, M: ParseMsg<'a>>(
         msg,
     };
 
-    Ok(message)
+    Ok((rem, message))
 }
 
 fn parse_pri(part: &str) -> NomRes<&str, u8> {

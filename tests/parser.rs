@@ -1,9 +1,9 @@
 use rsyslog::{
     parser::{
         msg::{HerokuRouter, Raw},
-        Skip,
+        SdParam, Skip, StructuredData,
     },
-    Error, Message, SdParam, StructuredData,
+    Error, Message,
 };
 
 #[test]
