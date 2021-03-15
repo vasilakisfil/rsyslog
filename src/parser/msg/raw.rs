@@ -35,11 +35,12 @@ impl<'a> ParseMsg<'a> for LineRaw<'a> {
     fn parse(msg: &'a str, _: Originator) -> Result<(&'a str, Self), Error<'a>> {
         //TODO: should use terminated with is_not maybe ?
         use nom::{
+            branch::alt,
             character::complete::{line_ending, not_line_ending},
             sequence::terminated,
         };
 
-        let (rem, msg) = terminated(not_line_ending, line_ending)(msg)?;
+        let (rem, msg) = alt((terminated(not_line_ending, line_ending), rest))(msg)?;
 
         Ok((rem, msg.into()))
     }
