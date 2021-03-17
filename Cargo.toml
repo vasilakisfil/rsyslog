@@ -7,6 +7,7 @@ description = "RFC 5424 customizable syslog parser"
 repository = "https://github.com/vasilakisfil/rsyslog"
 keywords = ["syslog", "5424", "rfc5424", "parser", "logging"]
 categories = ["parser-implementations", "parsing"]
+license-file = "LICENSE"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
