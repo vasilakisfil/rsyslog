@@ -258,6 +258,8 @@ fn heroku_test_message() {
             structured_data: Skip,
             msg: HerokuRouter {
                 at: "info",
+                code: None,
+                desc: None,
                 method: "POST",
                 path: "/api/v1/events/smartcam",
                 host: "ratatoskr.mobility46.se",
@@ -267,8 +269,46 @@ fn heroku_test_message() {
                 connect: 0,
                 service: 97,
                 status: 200,
-                bytes: 140,
+                bytes: Some(140),
                 protocol: "https"
+            }
+        })
+    );
+}
+
+#[test]
+fn heroku_error_test_message() {
+    let msg: Result<Message<_, Skip, HerokuRouter>, Error> = Message::parse(
+        r#"<158>1 2012-10-11T03:47:20+00:00 host heroku router - at=error code=H12 desc="Request timeout" method=GET path="/" host=myapp.herokuapp.com request_id=8601b555-6a83-4c12-8269-97c8e32cdb22 fwd="204.204.204.204" dyno=web.1 connect=1ms service=30000ms status=503 bytes= protocol=http"#,
+    );
+
+    assert_eq!(
+        msg,
+        Ok(rsyslog::Message {
+            facility: 19,
+            severity: 6,
+            version: 1,
+            timestamp: Some("2012-10-11T03:47:20+00:00"),
+            hostname: Some("host"),
+            app_name: Some("heroku"),
+            proc_id: Some("router"),
+            msg_id: None,
+            structured_data: Skip,
+            msg: HerokuRouter {
+                at: "error",
+                code: Some("H12"),
+                desc: Some("Request timeout"),
+                method: "GET",
+                path: "/",
+                host: "myapp.herokuapp.com",
+                request_id: "8601b555-6a83-4c12-8269-97c8e32cdb22",
+                fwd: "204.204.204.204",
+                dyno: "web.1",
+                connect: 1,
+                service: 30000,
+                status: 503,
+                bytes: None,
+                protocol: "http"
             }
         })
     );
