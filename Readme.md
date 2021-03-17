@@ -1,5 +1,6 @@
 # Rsyslog
 Very flexible Rust library for parsing syslog based on [RFC 5424](https://tools.ietf.org/html/rfc5424).
+Uses [nom](https://github.com/Geal/nom) as the sole dependency.
 
 ## Features
 * This thing is _fast_. It is 50% faster than [rust-syslog-rfc5424](https://github.com/Roguelazer/rust-syslog-rfc5424)
