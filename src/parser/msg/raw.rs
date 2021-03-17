@@ -13,7 +13,7 @@ impl<'a> From<&'a str> for Raw<'a> {
 }
 
 impl<'a> ParseMsg<'a> for Raw<'a> {
-    fn parse(msg: &'a str, _: Originator) -> Result<(&'a str, Self), Error<'a>> {
+    fn parse(msg: &'a str, _: &Originator) -> Result<(&'a str, Self), Error<'a>> {
         let (rem, msg) = rest(msg)?;
 
         Ok((rem, msg.into()))
@@ -32,7 +32,7 @@ impl<'a> From<&'a str> for LineRaw<'a> {
 }
 
 impl<'a> ParseMsg<'a> for LineRaw<'a> {
-    fn parse(msg: &'a str, _: Originator) -> Result<(&'a str, Self), Error<'a>> {
+    fn parse(msg: &'a str, _: &Originator) -> Result<(&'a str, Self), Error<'a>> {
         //TODO: should use terminated with is_not maybe ?
         use nom::{
             branch::alt,

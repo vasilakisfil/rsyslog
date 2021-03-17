@@ -14,14 +14,16 @@ fn main() -> Result<(), String> {
 
     let mut rem: &str = msg;
     while rem != "" {
-
         let tuple: (&str, OneLineMessage) =
             rsyslog::Message::parse_with_rem(rem).map_err(|e| e.to_string())?;
         rem = tuple.0;
         messages.push(tuple.1);
     }
 
-    println!("{:?}", messages.iter().map(|s| s.hostname).collect::<Vec<_>>());
+    println!(
+        "{:?}",
+        messages.iter().map(|s| s.hostname).collect::<Vec<_>>()
+    );
 
     Ok(())
 }

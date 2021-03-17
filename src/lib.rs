@@ -58,6 +58,7 @@ where
     pub fn iter(msg: &'a str) -> MessageIter<'a, T, S, M> {
         MessageIter {
             rem: msg,
+            found_error: false,
             t: std::marker::PhantomData,
             s: std::marker::PhantomData,
             m: std::marker::PhantomData,
@@ -72,6 +73,7 @@ where
     M: ParseMsg<'a>,
 {
     rem: &'a str,
+    found_error: bool,
     t: std::marker::PhantomData<T>,
     s: std::marker::PhantomData<S>,
     m: std::marker::PhantomData<M>,
@@ -83,17 +85,24 @@ where
     S: ParsePart<'a>,
     M: ParseMsg<'a>,
 {
-    type Item = Message<'a, T, S, M>;
+    type Item = Result<Message<'a, T, S, M>, Error<'a>>;
 
     fn next(&mut self) -> Option<Self::Item> {
+        if self.found_error {
+            return None;
+        }
+        if self.rem.is_empty() {
+            return None;
+        }
+
         let res = Message::parse_with_rem(self.rem);
 
         match res {
-            Err(_) => None,
+            Err(err) => Some(Err(err)),
             Ok((rem, msg)) => {
                 self.rem = rem;
 
-                Some(msg)
+                Some(Ok(msg))
             }
         }
     }
@@ -107,7 +116,7 @@ pub struct Originator<'a> {
 }
 
 pub trait ParseMsg<'a> {
-    fn parse(msg: &'a str, foo: Originator<'a>) -> Result<(&'a str, Self), Error<'a>>
+    fn parse(msg: &'a str, foo: &Originator<'a>) -> Result<(&'a str, Self), Error<'a>>
     where
         Self: Sized;
 }

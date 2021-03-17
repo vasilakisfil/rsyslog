@@ -41,7 +41,7 @@ pub(crate) fn parse<'a, T: ParsePart<'a>, S: ParsePart<'a>, M: ParseMsg<'a>>(
         msg_id,
     };
 
-    let (rem, msg) = M::parse(rem, partial_msg)?;
+    let (rem, msg) = M::parse(rem, &partial_msg)?;
 
     let message = crate::Message {
         facility: pri >> 3,
