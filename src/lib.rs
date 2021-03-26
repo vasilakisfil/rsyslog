@@ -17,7 +17,7 @@ pub trait ParsePart<'a>: serde::Serialize {
         Self: Sized;
 }
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 #[cfg_attr(feature = "serde-serialize", derive(serde::Serialize))]
 pub struct Message<
     'a,
@@ -48,11 +48,13 @@ where
     M: ParseMsg<'a>,
 {
     pub fn parse(msg: &'a str) -> Result<Message<'a, T, S, M>, Error<'a>> {
-        parser::parse(msg).map(|tuple| tuple.1)
+        parser::parse(msg)
+            .map(|tuple| tuple.1)
+            .map_err(|e| e.into_detailed_with(msg))
     }
 
     pub fn parse_with_rem(msg: &'a str) -> Result<(&'a str, Message<'a, T, S, M>), Error<'a>> {
-        parser::parse(msg)
+        parser::parse(msg).map_err(|e| e.into_detailed_with(msg))
     }
 
     pub fn iter(msg: &'a str) -> MessageIter<'a, T, S, M> {

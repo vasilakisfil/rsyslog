@@ -3,15 +3,28 @@ use nom::error::VerboseError;
 #[derive(Debug, PartialEq)]
 pub enum Error<'a> {
     Nom(nom::Err<VerboseError<&'a str>>),
+    NomVerbose(String),
     Custom(String),
     #[cfg(feature = "chrono-timestamp")]
     Timestamp(chrono::format::ParseError),
+}
+
+impl<'a> Error<'a> {
+    pub fn into_detailed_with(self, msg: &'a str) -> Self {
+        match self {
+            Error::Nom(nom::Err::Error(verbose)) => {
+                Error::NomVerbose(nom::error::convert_error(msg, verbose))
+            }
+            _ => self,
+        }
+    }
 }
 
 impl<'a> std::fmt::Display for Error<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match &*self {
             Error::Nom(_) => write!(f, "nom error"),
+            Error::NomVerbose(e) => write!(f, "nom error: {}", e),
             Error::Custom(inner) => write!(f, "{}", inner),
             #[cfg(feature = "chrono-timestamp")]
             Error::Timestamp(e) => write!(f, "{}", e),

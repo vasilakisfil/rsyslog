@@ -17,13 +17,13 @@ impl<'a> ParsePart<'a> for Vec<StructuredData<'a>> {
     }
 }
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct StructuredData<'a> {
     pub id: &'a str,
     pub params: Vec<SdParam<'a>>,
 }
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct SdParam<'a> {
     pub name: &'a str,
     pub value: &'a str,

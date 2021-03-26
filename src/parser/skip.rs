@@ -1,6 +1,6 @@
 use crate::{Error, ParsePart};
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct Skip;
 
 impl<'a> ParsePart<'a> for Skip {

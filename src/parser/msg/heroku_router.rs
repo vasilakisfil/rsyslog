@@ -6,7 +6,7 @@ use nom::{
     sequence::tuple,
 };
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct HerokuRouter<'a> {
     pub at: &'a str,
     pub code: Option<&'a str>,
@@ -17,8 +17,8 @@ pub struct HerokuRouter<'a> {
     pub request_id: &'a str,
     pub fwd: &'a str,
     pub dyno: &'a str,
-    pub connect: u64,
-    pub service: u64,
+    pub connect: u32,
+    pub service: u32,
     pub status: u16,
     pub bytes: Option<u64>,
     pub protocol: &'a str,
@@ -61,8 +61,8 @@ impl<'a> ParseMsg<'a> for HerokuRouter<'a> {
             request_id,
             fwd,
             dyno,
-            connect: helpers::parse_u64(connect)?,
-            service: helpers::parse_u64(service)?,
+            connect: helpers::parse_u32(connect)?,
+            service: helpers::parse_u32(service)?,
             status: helpers::parse_u16(status)?,
             bytes: bytes.map(helpers::parse_u64).transpose()?,
             protocol,
@@ -83,7 +83,13 @@ pub fn parse_end_word<'a>(part: &'a str, element: &'a str) -> NomRes<&'a str, &'
     let (rem, (_, _, el)) = tuple((
         take_until(element),
         tag(element),
-        alt((take_until("\n\r"), take_until("\n"), take_until(" "), rest)),
+        alt((
+            take_until("\n\r"),
+            take_until("\n\n"),
+            take_until("\n"),
+            take_until(" "),
+            rest,
+        )),
     ))(part)?;
 
     Ok((rem, el))

@@ -1,7 +1,7 @@
 use crate::{Error, Originator, ParseMsg};
 use nom::combinator::rest;
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct Raw<'a> {
     pub msg: &'a str,
 }
@@ -20,7 +20,7 @@ impl<'a> ParseMsg<'a> for Raw<'a> {
     }
 }
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct LineRaw<'a> {
     pub msg: &'a str,
 }
