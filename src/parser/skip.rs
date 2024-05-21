@@ -1,6 +1,7 @@
 use crate::{Error, ParsePart};
 
 #[derive(Debug, Eq, PartialEq, Clone)]
+#[cfg_attr(feature = "serde-serialize", derive(serde_derive::Serialize))]
 pub struct Skip;
 
 impl<'a> ParsePart<'a> for Skip {
