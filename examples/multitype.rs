@@ -57,6 +57,10 @@ fn main() -> Result<(), String> {
         let line = line.map_err(|s| s.to_string())?;
 
         println!("{:?}", line.proc_id);
+        match line.msg {
+            CustomRaw::Router(heroku_router) => println!("{heroku_router:?}"),
+            CustomRaw::Other(line_raw) => println!("{line_raw:?}"),
+        }
     }
 
     Ok(())
