@@ -28,3 +28,4 @@ syslog_rfc5424 = "0.9"
 [[bench]]
 name = "bench"
 harness = false
+required-features = ["chrono-timestamp"]
