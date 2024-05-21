@@ -30,12 +30,12 @@ impl<'a> rsyslog::ParseMsg<'a> for CustomRaw<'a> {
     ) -> Result<(&'a str, Self), Error<'a>> {
         match originator.proc_id {
             Some("router") => {
-                let (rem, message) = HerokuRouter::parse(msg, &originator)?;
+                let (rem, message) = HerokuRouter::parse(msg, originator)?;
                 //println!("{}", rem);
                 //let (rem, _) = LineRaw::parse(rem, &originator)?;
                 Ok((rem, message.into()))
             }
-            _ => LineRaw::parse(msg, &originator).map(|(s, msg)| (s, msg.into())),
+            _ => LineRaw::parse(msg, originator).map(|(s, msg)| (s, msg.into())),
         }
     }
 }

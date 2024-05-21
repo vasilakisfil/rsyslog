@@ -22,7 +22,7 @@ impl<'a> Error<'a> {
 
 impl<'a> std::fmt::Display for Error<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        match &*self {
+        match self {
             Error::Nom(_) => write!(f, "nom error"),
             Error::NomVerbose(e) => write!(f, "nom error: {}", e),
             Error::Custom(inner) => write!(f, "{}", inner),

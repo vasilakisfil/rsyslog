@@ -2,7 +2,7 @@
 name = "rsyslog"
 version = "0.1.4"
 authors = ["Filippos Vasilakis <vasilakisfil@gmail.com>"]
-edition = "2018"
+edition = "2021"
 description = "RFC 5424 customizable syslog parser"
 repository = "https://github.com/vasilakisfil/rsyslog"
 keywords = ["syslog", "5424", "rfc5424", "parser", "logging"]
