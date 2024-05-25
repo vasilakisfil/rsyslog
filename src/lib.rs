@@ -18,7 +18,7 @@ pub trait ParsePart<'a>: serde::Serialize {
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
-#[cfg_attr(feature = "serde-serialize", derive(serde_derive::Serialize))]
+#[cfg_attr(feature = "serde-serialize", derive(serde::Serialize))]
 pub struct Message<
     'a,
     T = Option<&'a str>,
