@@ -13,12 +13,11 @@ license-file = "LICENSE"
 
 [dependencies]
 nom = { version = "6.1.2", features = ["alloc", "regexp"] }
-chrono = { version = "0.4.19", optional = true}
-serde = { version = "1.0", optional = true }
-serde_derive = { version = "1.0", optional = true }
+chrono = { version = "0.4.19", optional = true }
+serde = { version = "1.0", features = ["derive"], optional = true }
 
 [features]
-serde-serialize = ["serde", "serde_derive"]
+serde-serialize = ["serde", "chrono?/serde"]
 chrono-timestamp = ["chrono"]
 
 [dev-dependencies]
