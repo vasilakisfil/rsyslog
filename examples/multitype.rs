@@ -30,12 +30,12 @@ impl<'a> rsyslog::ParseMsg<'a> for CustomRaw<'a> {
     ) -> Result<(&'a str, Self), Error<'a>> {
         match originator.proc_id {
             Some("router") => {
-                let (rem, message) = HerokuRouter::parse(msg, &originator)?;
+                let (rem, message) = HerokuRouter::parse(msg, originator)?;
                 //println!("{}", rem);
                 //let (rem, _) = LineRaw::parse(rem, &originator)?;
                 Ok((rem, message.into()))
             }
-            _ => LineRaw::parse(msg, &originator).map(|(s, msg)| (s, msg.into())),
+            _ => LineRaw::parse(msg, originator).map(|(s, msg)| (s, msg.into())),
         }
     }
 }
@@ -57,6 +57,10 @@ fn main() -> Result<(), String> {
         let line = line.map_err(|s| s.to_string())?;
 
         println!("{:?}", line.proc_id);
+        match line.msg {
+            CustomRaw::Router(heroku_router) => println!("{heroku_router:?}"),
+            CustomRaw::Other(line_raw) => println!("{line_raw:?}"),
+        }
     }
 
     Ok(())

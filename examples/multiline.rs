@@ -13,7 +13,7 @@ fn main() -> Result<(), String> {
     let mut messages: Vec<OneLineMessage> = Vec::new();
 
     let mut rem: &str = msg;
-    while rem != "" {
+    while !rem.is_empty() {
         let tuple: (&str, OneLineMessage) =
             rsyslog::Message::parse_with_rem(rem).map_err(|e| e.to_string())?;
         rem = tuple.0;

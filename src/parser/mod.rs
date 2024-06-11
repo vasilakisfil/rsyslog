@@ -77,7 +77,7 @@ fn parse_version(part: &str) -> NomRes<&str, u8> {
     Ok((rem, helpers::parse_u8(version)?))
 }
 
-fn parse_part<'a>(part: &'a str) -> NomRes<&'a str, Option<&str>> {
+fn parse_part(part: &str) -> NomRes<&str, Option<&str>> {
     let (rem, word) = take_until(" ")(part)?;
 
     if word == "-" {

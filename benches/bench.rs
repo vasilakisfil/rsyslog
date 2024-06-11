@@ -1,24 +1,24 @@
 use criterion::{criterion_group, criterion_main, Criterion};
 
 pub fn criterion_benchmark(c: &mut Criterion) {
-    c.bench_function("rsyslog empty msg", |b| b.iter(|| rsyslog_empty_msg()));
+    c.bench_function("rsyslog empty msg", |b| b.iter(rsyslog_empty_msg));
     c.bench_function("syslog_rfc5424 empty msg", |b| {
-        b.iter(|| syslog_rfc5424_empty_msg())
+        b.iter(syslog_rfc5424_empty_msg)
     });
 
-    c.bench_function("rsyslog small msg", |b| b.iter(|| rsyslog_small_msg()));
+    c.bench_function("rsyslog small msg", |b| b.iter(rsyslog_small_msg));
     c.bench_function("syslog_rfc5424 small msg", |b| {
-        b.iter(|| syslog_rfc5424_small_msg())
+        b.iter(syslog_rfc5424_small_msg)
     });
 
-    c.bench_function("rsyslog medium msg", |b| b.iter(|| rsyslog_medium_msg()));
+    c.bench_function("rsyslog medium msg", |b| b.iter(rsyslog_medium_msg));
     c.bench_function("syslog_rfc5424 medium msg", |b| {
-        b.iter(|| syslog_rfc5424_medium_msg())
+        b.iter(syslog_rfc5424_medium_msg)
     });
 
-    c.bench_function("rsyslog heroku msg", |b| b.iter(|| rsyslog_heroku_msg()));
+    c.bench_function("rsyslog heroku msg", |b| b.iter(rsyslog_heroku_msg));
     c.bench_function("syslog_rfc5424 heroku msg", |b| {
-        b.iter(|| syslog_rfc5424_heroku_msg())
+        b.iter(syslog_rfc5424_heroku_msg)
     });
 }
 

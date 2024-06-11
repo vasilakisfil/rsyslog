@@ -2,7 +2,7 @@
 name = "rsyslog"
 version = "0.1.4"
 authors = ["Filippos Vasilakis <vasilakisfil@gmail.com>"]
-edition = "2018"
+edition = "2021"
 description = "RFC 5424 customizable syslog parser"
 repository = "https://github.com/vasilakisfil/rsyslog"
 keywords = ["syslog", "5424", "rfc5424", "parser", "logging"]
@@ -12,8 +12,9 @@ license-file = "LICENSE"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-nom = { version = "6.1.2", features = ["alloc", "regexp"] }
-chrono = { version = "0.4.19", optional = true }
+nom = { version = "7.1", default-features = false, features = ["alloc"] }
+nom-regex = "0.2"
+chrono = { version = "0.4", default-features = false, optional = true }
 serde = { version = "1.0", features = ["derive"], optional = true }
 
 [features]
@@ -21,9 +22,10 @@ serde-serialize = ["serde", "chrono?/serde"]
 chrono-timestamp = ["chrono"]
 
 [dev-dependencies]
-criterion = { version = "0.3.4", features = ["html_reports"] }
-syslog_rfc5424 = "0.7.0"
+criterion = { version = "0.5", features = ["html_reports"] }
+syslog_rfc5424 = "0.9"
 
 [[bench]]
 name = "bench"
 harness = false
+required-features = ["chrono-timestamp"]

@@ -72,7 +72,7 @@ fn parse_structured_data_inner(part: &str) -> NomRes<&str, StructuredData> {
     Ok((rem, (id, sd_params).into()))
 }
 
-fn parse_structured_elements<'a>(part: &'a str) -> NomRes<&'a str, SdParam> {
+fn parse_structured_elements(part: &str) -> NomRes<&str, SdParam> {
     use nom::character::complete::space0;
 
     let (rem, _) = space0(part)?;
