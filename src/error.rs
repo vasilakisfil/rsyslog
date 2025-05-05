@@ -20,7 +20,7 @@ impl<'a> Error<'a> {
     }
 }
 
-impl<'a> std::fmt::Display for Error<'a> {
+impl std::fmt::Display for Error<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
             Error::Nom(_) => write!(f, "nom error"),
@@ -32,7 +32,7 @@ impl<'a> std::fmt::Display for Error<'a> {
     }
 }
 
-impl<'a> std::error::Error for Error<'a> {
+impl std::error::Error for Error<'_> {
     /*
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         match *self {
@@ -52,7 +52,7 @@ impl<'a> From<nom::Err<VerboseError<&'a str>>> for Error<'a> {
 }
 
 #[cfg(feature = "chrono-timestamp")]
-impl<'a> From<chrono::format::ParseError> for Error<'a> {
+impl From<chrono::format::ParseError> for Error<'_> {
     fn from(verbose: chrono::format::ParseError) -> Self {
         Error::Timestamp(verbose)
     }

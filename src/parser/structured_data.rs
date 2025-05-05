@@ -10,7 +10,7 @@ use nom::{
 };
 
 impl<'a> ParsePart<'a> for Vec<StructuredData<'a>> {
-    fn parse(sd: &'a str) -> Result<(&'a str, Self), Error> {
+    fn parse(sd: &'a str) -> Result<(&'a str, Self), Error<'a>> {
         let (rem, sdata) = alt((map(tag("-"), |_| vec![]), many1(parse_structured_data)))(sd)?;
 
         Ok((rem, sdata))
@@ -49,7 +49,7 @@ impl<'a> From<(&'a str, &'a str)> for SdParam<'a> {
     }
 }
 
-fn parse_structured_data<'a>(part: &'a str) -> NomRes<&'a str, StructuredData> {
+fn parse_structured_data<'a>(part: &'a str) -> NomRes<&'a str, StructuredData<'a>> {
     let (rem, data) = delimited::<_, _, _, _, VerboseError<&'a str>, _, _, _>(
         tag("["),
         take_until("]"),

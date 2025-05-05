@@ -3,7 +3,7 @@ use nom::bytes::complete::take_until;
 
 #[cfg(feature = "chrono-timestamp")]
 impl<'a> ParsePart<'a> for Option<crate::parser::DateTime> {
-    fn parse(part: &'a str) -> Result<(&'a str, Self), Error> {
+    fn parse(part: &'a str) -> Result<(&'a str, Self), Error<'a>> {
         let (rem, word) = take_until(" ")(part)?;
 
         match word {
@@ -18,7 +18,7 @@ impl<'a> ParsePart<'a> for Option<crate::parser::DateTime> {
 }
 
 impl<'a> ParsePart<'a> for Option<&'a str> {
-    fn parse(part: &'a str) -> Result<(&'a str, Self), Error> {
+    fn parse(part: &'a str) -> Result<(&'a str, Self), Error<'a>> {
         let (rem, word) = take_until(" ")(part)?;
 
         match word {

@@ -8,7 +8,8 @@ use rsyslog::{
 
 #[test]
 fn empty_message() {
-    let msg: Result<Message, Error> = Message::parse("<1>1 - - - - - -");
+    let msg = "<1>1 - - - - - -";
+    let msg: Result<Message, Error> = Message::parse(msg);
 
     assert_eq!(
         msg,
@@ -29,8 +30,8 @@ fn empty_message() {
 
 #[test]
 fn timestamp_message() {
-    let msg: Result<Message, Error> =
-        Message::parse("<1>1 2021-03-01T19:04:19.887695+00:00 - - - - -");
+    let msg = "<1>1 2021-03-01T19:04:19.887695+00:00 - - - - -";
+    let msg: Result<Message, Error> = Message::parse(msg);
 
     assert_eq!(
         msg,
@@ -51,8 +52,8 @@ fn timestamp_message() {
 
 #[test]
 fn timestamp_host_message() {
-    let msg: Result<Message, Error> =
-        Message::parse("<1>1 2021-03-01T19:04:19.887695+00:00 host - - - -");
+    let msg = "<1>1 2021-03-01T19:04:19.887695+00:00 host - - - -";
+    let msg: Result<Message, Error> = Message::parse(msg);
 
     assert_eq!(
         msg,
@@ -73,8 +74,8 @@ fn timestamp_host_message() {
 
 #[test]
 fn timestamp_host_app_name_message() {
-    let msg: Result<Message, Error> =
-        Message::parse("<1>1 2021-03-01T19:04:19.887695+00:00 host app_name - - -");
+    let msg = "<1>1 2021-03-01T19:04:19.887695+00:00 host app_name - - -";
+    let msg: Result<Message, Error> = Message::parse(msg);
 
     assert_eq!(
         msg,
@@ -95,8 +96,8 @@ fn timestamp_host_app_name_message() {
 
 #[test]
 fn timestamp_host_app_name_proc_id_message() {
-    let msg: Result<Message, Error> =
-        Message::parse("<1>1 2021-03-01T19:04:19.887695+00:00 host app_name proc_id - -");
+    let msg = "<1>1 2021-03-01T19:04:19.887695+00:00 host app_name proc_id - -";
+    let msg: Result<Message, Error> = Message::parse(msg);
 
     assert_eq!(
         msg,
@@ -117,8 +118,8 @@ fn timestamp_host_app_name_proc_id_message() {
 
 #[test]
 fn timestamp_host_app_name_proc_id_msg_id_message() {
-    let msg: Result<Message, Error> =
-        Message::parse("<1>1 2021-03-01T19:04:19.887695+00:00 host app_name proc_id msg_id -");
+    let msg = "<1>1 2021-03-01T19:04:19.887695+00:00 host app_name proc_id msg_id -";
+    let msg: Result<Message, Error> = Message::parse(msg);
 
     assert_eq!(
         msg,
@@ -139,9 +140,11 @@ fn timestamp_host_app_name_proc_id_msg_id_message() {
 
 #[test]
 fn timestamp_host_app_name_proc_id_structured_data_message() {
-    let msg: Result<Message, Error> = Message::parse(
-        "<1>1 2021-03-01T19:04:19.887695+00:00 host app_name proc_id msg_id [structured_data]",
+    let msg = concat!(
+        "<1>1 2021-03-01T19:04:19.887695+00:00 ",
+        "host app_name proc_id msg_id [structured_data]"
     );
+    let msg: Result<Message, Error> = Message::parse(msg);
 
     assert_eq!(
         msg,
@@ -165,7 +168,11 @@ fn timestamp_host_app_name_proc_id_structured_data_message() {
 
 #[test]
 fn complex_message() {
-    let msg: Result<Message, Error> = Message::parse("<1>1 2021-03-01T19:04:19.887695+00:00 host app_name proc_id msg_id [exampleSDID@32473 iut=\"3\" eventSource=\"Application\" eventID=\"1011\"]");
+    let msg = concat!(
+        "<1>1 2021-03-01T19:04:19.887695+00:00 host app_name proc_id msg_id ",
+        "[exampleSDID@32473 iut=\"3\" eventSource=\"Application\" eventID=\"1011\"]"
+    );
+    let msg: Result<Message, Error> = Message::parse(msg);
 
     assert_eq!(
         msg,
@@ -202,9 +209,13 @@ fn complex_message() {
 
 #[test]
 fn complex_message2() {
-    let msg: Result<Message, Error> = Message::parse(
-        r#"<29>1 2016-02-21T04:32:57+00:00 web1 someservice - - [origin x-service="someservice"][meta sequenceId="14125553"] 127.0.0.1 - - 1456029177 "GET /v1/ok HTTP/1.1" 200 145 "-" "hacheck 0.9.0" 24306 127.0.0.1:40124 575"#,
+    let msg = concat!(
+        "<29>1 2016-02-21T04:32:57+00:00 web1 someservice - - ",
+        r#"[origin x-service="someservice"][meta sequenceId="14125553"] "#,
+        r#"127.0.0.1 - - 1456029177 "GET /v1/ok HTTP/1.1" 200 145 "-" "#,
+        r#""hacheck 0.9.0" 24306 127.0.0.1:40124 575"#
     );
+    let msg: Result<Message, Error> = Message::parse(msg);
 
     assert_eq!(
         msg,
@@ -234,7 +245,10 @@ fn complex_message2() {
                 }
             ],
             msg: Raw {
-                msg: r#"127.0.0.1 - - 1456029177 "GET /v1/ok HTTP/1.1" 200 145 "-" "hacheck 0.9.0" 24306 127.0.0.1:40124 575"#
+                msg: concat!(
+                    r#"127.0.0.1 - - 1456029177 "GET /v1/ok HTTP/1.1" "#,
+                    r#"200 145 "-" "hacheck 0.9.0" 24306 127.0.0.1:40124 575"#
+                )
             }
         })
     );
@@ -242,7 +256,15 @@ fn complex_message2() {
 
 #[test]
 fn heroku_test_message() {
-    let msg: Result<Message<_, Skip, HerokuRouter>, Error> = Message::parse("<158>1 2021-03-01T19:04:19.887695+00:00 host heroku router - at=info method=POST path=\"/api/v1/events/smartcam\" host=ratatoskr.mobility46.se request_id=5599e09a-f8e3-4ed9-8be8-6883ce842cf2 fwd=\"157.230.107.240\" dyno=web.1 connect=0ms service=97ms status=200 bytes=140 protocol=https");
+    let msg = concat!(
+        "<158>1 2021-03-01T19:04:19.887695+00:00 host heroku router - ",
+        "at=info method=POST path=\"/api/v1/events/smartcam\" ",
+        "host=ratatoskr.mobility46.se ",
+        "request_id=5599e09a-f8e3-4ed9-8be8-6883ce842cf2 ",
+        "fwd=\"157.230.107.240\" dyno=web.1 connect=0ms service=97ms ",
+        "status=200 bytes=140 protocol=https"
+    );
+    let msg: Result<Message<_, Skip, HerokuRouter>, Error> = Message::parse(msg);
 
     assert_eq!(
         msg,
@@ -278,9 +300,15 @@ fn heroku_test_message() {
 
 #[test]
 fn heroku_error_test_message() {
-    let msg: Result<Message<_, Skip, HerokuRouter>, Error> = Message::parse(
-        r#"<158>1 2012-10-11T03:47:20+00:00 host heroku router - at=error code=H12 desc="Request timeout" method=GET path="/" host=myapp.herokuapp.com request_id=8601b555-6a83-4c12-8269-97c8e32cdb22 fwd="204.204.204.204" dyno=web.1 connect=1ms service=30000ms status=503 bytes= protocol=http"#,
+    let msg = concat!(
+        "<158>1 2012-10-11T03:47:20+00:00 host heroku router - ",
+        r#"at=error code=H12 desc="Request timeout" method=GET path="/" "#,
+        "host=myapp.herokuapp.com ",
+        "request_id=8601b555-6a83-4c12-8269-97c8e32cdb22 ",
+        r#"fwd="204.204.204.204" dyno=web.1 connect=1ms service=30000ms "#,
+        "status=503 bytes= protocol=http"
     );
+    let msg: Result<Message<_, Skip, HerokuRouter>, Error> = Message::parse(msg);
 
     assert_eq!(
         msg,
