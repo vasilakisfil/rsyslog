@@ -6,13 +6,13 @@ pub(crate) type NomRes<T, U> = nom::IResult<T, U, nom::error::VerboseError<T>>;
 
 #[cfg(not(feature = "serde-serialize"))]
 pub trait ParsePart<'a> {
-    fn parse(msg: &'a str) -> Result<(&'a str, Self), Error>
+    fn parse(msg: &'a str) -> Result<(&'a str, Self), Error<'a>>
     where
         Self: Sized;
 }
 #[cfg(feature = "serde-serialize")]
 pub trait ParsePart<'a>: serde::Serialize {
-    fn parse(msg: &'a str) -> Result<(&'a str, Self), Error>
+    fn parse(msg: &'a str) -> Result<(&'a str, Self), Error<'a>>
     where
         Self: Sized;
 }

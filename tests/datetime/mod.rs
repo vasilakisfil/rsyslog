@@ -5,9 +5,8 @@ use rsyslog::{
 
 #[test]
 fn message_with_timestamp() {
-    let msg: Result<Message<Option<DateTime>, Vec<StructuredData>, _>, Error> = Message::parse(
-        "<1>1 2021-03-01T19:04:19.887695+00:00 host app_name proc_id msg_id - a message",
-    );
+    let msg = "<1>1 2021-03-01T19:04:19.887695+00:00 host app_name proc_id msg_id - a message";
+    let msg: Result<Message<Option<DateTime>, Vec<StructuredData>, _>, Error> = Message::parse(msg);
 
     assert_eq!(
         msg,
