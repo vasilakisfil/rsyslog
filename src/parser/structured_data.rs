@@ -90,9 +90,10 @@ mod tests {
     use super::*;
 
     #[test]
-    fn simple_structured_data() {
+    fn simple_structured_data1() {
+        let msg = "[a]";
         assert_eq!(
-            <Vec<StructuredData> as ParsePart>::parse("[a]")
+            <Vec<StructuredData> as ParsePart>::parse(msg)
                 .expect("parsing data")
                 .1,
             vec![StructuredData {
@@ -100,13 +101,15 @@ mod tests {
                 params: vec![]
             }]
         );
+    }
 
+    #[test]
+    fn simple_structured_data2() {
+        let msg = r#"[exampleSDID@32473 iut="3" eventSource="Application" eventID="1011"]"#;
         assert_eq!(
-            <Vec<StructuredData> as ParsePart>::parse(
-                "[exampleSDID@32473 iut=\"3\" eventSource=\"Application\" eventID=\"1011\"]"
-            )
-            .expect("parsing data")
-            .1,
+            <Vec<StructuredData> as ParsePart>::parse(msg)
+                .expect("parsing data")
+                .1,
             vec![StructuredData {
                 id: "exampleSDID@32473",
                 params: vec![
@@ -128,9 +131,10 @@ mod tests {
     }
 
     #[test]
-    fn simple_structured_data_inner() {
+    fn simple_structured_data_inner1() {
+        let msg = "a";
         assert_eq!(
-            parse_structured_data_inner("a"),
+            parse_structured_data_inner(msg),
             Ok((
                 "",
                 StructuredData {
@@ -139,9 +143,13 @@ mod tests {
                 }
             ))
         );
+    }
 
+    #[test]
+    fn simple_structured_data_inner2() {
+        let msg = r#"a key="value" anotherkey="anothervalue""#;
         assert_eq!(
-            parse_structured_data_inner(r#"a key="value" anotherkey="anothervalue""#),
+            parse_structured_data_inner(msg),
             Ok((
                 "",
                 StructuredData {
@@ -159,11 +167,13 @@ mod tests {
                 }
             ))
         );
+    }
 
+    #[test]
+    fn simple_structured_data_inner3() {
+        let msg = r#"exampleSDID@32473 iut="3" eventSource="Application" eventID="1011""#;
         assert_eq!(
-            parse_structured_data_inner(
-                "exampleSDID@32473 iut=\"3\" eventSource=\"Application\" eventID=\"1011\""
-            ),
+            parse_structured_data_inner(msg),
             Ok((
                 "",
                 StructuredData {
