@@ -255,6 +255,68 @@ fn complex_message2() {
 }
 
 #[test]
+fn complex_message3() {
+    let msg = concat!(
+        "<29>1 2016-02-21T04:32:57+00:00 web1 someservice - - ",
+        r#"[origin x-service="someservice"][meta sequenceId="14125553"]"#,
+        r#"[origin2 x-service2="Application \"123\""][meta2 sequenceId2="\" 14125553 \""] "#,
+        r#"127.0.0.1 - - 1456029177 "GET /v1/ok HTTP/1.1" 200 145 "-" "#,
+        r#""hacheck 0.9.0" 24306 127.0.0.1:40124 575"#
+    );
+    let msg: Result<Message, Error> = Message::parse(msg);
+
+    assert_eq!(
+        msg,
+        Ok(rsyslog::Message {
+            facility: 3,
+            severity: 5,
+            version: 1,
+            timestamp: Some("2016-02-21T04:32:57+00:00"),
+            hostname: Some("web1"),
+            app_name: Some("someservice"),
+            proc_id: None,
+            msg_id: None,
+            structured_data: vec![
+                StructuredData {
+                    id: "origin",
+                    params: vec![SdParam {
+                        name: "x-service",
+                        value: "someservice"
+                    },]
+                },
+                StructuredData {
+                    id: "meta",
+                    params: vec![SdParam {
+                        name: "sequenceId",
+                        value: "14125553"
+                    },]
+                },
+                StructuredData {
+                    id: "origin2",
+                    params: vec![SdParam {
+                        name: "x-service2",
+                        value: "Application \\\"123\\\""
+                    },]
+                },
+                StructuredData {
+                    id: "meta2",
+                    params: vec![SdParam {
+                        name: "sequenceId2",
+                        value: "\\\" 14125553 \\\""
+                    },]
+                }
+            ],
+            msg: Raw {
+                msg: concat!(
+                    r#"127.0.0.1 - - 1456029177 "GET /v1/ok HTTP/1.1" "#,
+                    r#"200 145 "-" "hacheck 0.9.0" 24306 127.0.0.1:40124 575"#
+                )
+            }
+        })
+    );
+}
+
+#[test]
 fn heroku_test_message() {
     let msg = concat!(
         "<158>1 2021-03-01T19:04:19.887695+00:00 host heroku router - ",
