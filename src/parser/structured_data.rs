@@ -73,15 +73,19 @@ fn parse_structured_data_inner(part: &str) -> NomRes<&str, StructuredData> {
 }
 
 fn parse_structured_elements(part: &str) -> NomRes<&str, SdParam> {
-    use nom::character::complete::space0;
+    use nom::{
+        bytes::complete::{escaped, is_not},
+        character::complete::{one_of, space0},
+        sequence::tuple,
+    };
 
     let (rem, _) = space0(part)?;
-    let (rem, key_value) = alt((take_until(" "), rest))(rem)?;
-    let (key_value_rem, key) = take_until("=")(key_value)?;
-    let (value, _) = tag("=")(key_value_rem)?;
-
-    let value: &str = &value[1..value.len() - 1];
-
+    let (value_rem, (key, _)) = tuple((take_until("="), tag("=")))(rem)?;
+    let (rem, (_, value, _)) = tuple((
+        tag("\""),
+        escaped(is_not(r#"\""#), '\\', one_of(r#"""#)),
+        tag("\""),
+    ))(value_rem)?;
     Ok((rem, (key, value).into()))
 }
 
@@ -186,6 +190,67 @@ mod tests {
                         SdParam {
                             name: "eventSource",
                             value: "Application"
+                        },
+                        SdParam {
+                            name: "eventID",
+                            value: "1011"
+                        }
+                    ]
+                }
+            ))
+        );
+    }
+
+    #[test]
+    fn simple_structured_data_inner4() {
+        let msg = r#"exampleSDID@32473 iut="3" eventSource="Application 123" eventID="1011""#;
+        assert_eq!(
+            parse_structured_data_inner(msg),
+            Ok((
+                "",
+                StructuredData {
+                    id: "exampleSDID@32473",
+                    params: vec![
+                        SdParam {
+                            name: "iut",
+                            value: "3"
+                        },
+                        SdParam {
+                            name: "eventSource",
+                            value: "Application 123"
+                        },
+                        SdParam {
+                            name: "eventID",
+                            value: "1011"
+                        }
+                    ]
+                }
+            ))
+        );
+    }
+
+    #[test]
+    fn simple_structured_data_inner5() {
+        let msg = concat!(
+            "exampleSDID@32473 ",
+            r#"iut="3" "#,
+            r#"eventSource="Application 123 \"foobar\" " "#,
+            r#"eventID="1011""#
+        );
+        assert_eq!(
+            parse_structured_data_inner(msg),
+            Ok((
+                "",
+                StructuredData {
+                    id: "exampleSDID@32473",
+                    params: vec![
+                        SdParam {
+                            name: "iut",
+                            value: "3"
+                        },
+                        SdParam {
+                            name: "eventSource",
+                            value: "Application 123 \\\"foobar\\\" "
                         },
                         SdParam {
                             name: "eventID",
